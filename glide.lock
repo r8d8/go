@@ -1,5 +1,5 @@
-hash: d706a6b1bff95df93546374ff7ef6ecf0b11cf60d054c67569f46df10e477cf3
-updated: 2017-10-05T09:54:13.340235406-07:00
+hash: a9cd7001431e568caeb52eec405376ac640376f357c76d92391e3b6183736bcb
+updated: 2017-11-09T14:24:33.492355045+01:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -54,6 +54,10 @@ imports:
   repo: https://github.com/davecgh/go-spew
   subpackages:
   - spew
+- name: github.com/FactomProject/basen
+  version: fe3947df716ebfda9847eb1b9a48f9592e06478c
+- name: github.com/FactomProject/btcutilecc
+  version: d3a63a5752ecf3fbc06bd97365da752111c263df
 - name: github.com/fatih/structs
   version: a720dfa8df582c51dee1b36feabb906bde1588bd
   repo: https://github.com/fatih/structs
@@ -287,6 +291,10 @@ imports:
   - assert
   - mock
   - require
+- name: github.com/tyler-smith/go-bip32
+  version: 2c9cfd17756470a0b7c3e4b7954bae7d11035504
+- name: github.com/tyler-smith/go-bip39
+  version: 8e7a99b3e716f36d3b080a9a70f9eb45abe4edcc
 - name: github.com/tylerb/graceful
   version: 7116c7a8115899e80197cd9e0b97998c0f97ed8e
   repo: https://github.com/tylerb/graceful
@@ -344,6 +352,8 @@ imports:
   version: 1f22c0103821b9390939b6776727195525381532
   repo: https://go.googlesource.com/crypto
   subpackages:
+  - pbkdf2
+  - ripemd160
   - ssh/terminal
 - name: golang.org/x/net
   version: 9bc2a3340c92c17a20edcd0080e93851ed58f5d5
