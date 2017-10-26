@@ -7,6 +7,11 @@ import (
 
 	"github.com/stellar/go/services/horizon/internal/db2/history"
 	"github.com/stellar/go/services/horizon/internal/resource"
+	. "github.com/stellar/go/services/horizon/internal/db2/history"
+	. "github.com/stellar/go/services/horizon/internal/test/trades"
+	"strconv"
+	"github.com/stellar/go/xdr"
+	"fmt"
 )
 
 func TestTradeActions_Index(t *testing.T) {
@@ -38,7 +43,6 @@ func TestTradeActions_Index(t *testing.T) {
 	q.Add("counter_asset_code", "EUR")
 	q.Add("counter_asset_issuer", "GCQPYGH4K57XBDENKKX55KDTWOTK5WDWRQOH2LHEDX3EKVIQRLMESGBG")
 
-
 	w = ht.Get("/trades?" + q.Encode())
 	if ht.Assert.Equal(200, w.Code) {
 		ht.Assert.PageOf(1, w.Body)
@@ -68,7 +72,93 @@ func TestTradeActions_Index(t *testing.T) {
 		ht.Assert.Contains(records[0], "base_amount")
 		ht.Assert.Contains(records[0], "counter_amount")
 	}
+}
 
+// Add an asset filter with a given prefix to a query
+func setAssetQuery(q url.Values, prefix string, asset xdr.Asset) url.Values {
+	var assetType, assetCode, assetFilter string
+	asset.Extract(&assetType, &assetCode, &assetFilter)
+	q.Add(prefix+"asset_type", assetType)
+	q.Add(prefix+"asset_code", assetCode)
+	q.Add(prefix+"asset_issuer", assetFilter)
+	return q
+}
+
+func TestTradeActions_AggregationBasic(t *testing.T) {
+	ht := StartHTTPTest(t, "base")
+	defer ht.Finish()
+
+	const numOfTrades = 10
+	const start = 0
+	const second = 1000
+	const minute = 60 * second
+	const hour = minute * 60
+
+	dbQ := &Q{ht.HorizonSession()}
+	err, ass1, ass2 := PopulateTestTrades(dbQ, start, numOfTrades, minute)
+
+	if !ht.Assert.NoError(err) {
+		return
+	}
+
+	var records []resource.TradeAggregation
+	var nextLink string
+
+	q := make(url.Values)
+	setAssetQuery(q, "base_", ass1)
+	setAssetQuery(q, "counter_", ass2)
+	q.Add("resolution", strconv.FormatInt(minute, 10))
+	q.Add("start_time", strconv.FormatInt(start, 10))
+	q.Add("end_time", strconv.FormatInt(start+hour, 10))
+	w := ht.Get("/trades/aggregate?" + q.Encode())
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(numOfTrades, w.Body)
+	}
+
+	//test partial range
+	q.Set("end_time", strconv.Itoa(start+(numOfTrades/2)*minute))
+	w = ht.Get("/trades/aggregate?" + q.Encode())
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(numOfTrades/2, w.Body)
+	}
+
+	//test limit
+	limit := 3
+	q.Add("limit", strconv.Itoa(limit))
+	w = ht.Get("/trades/aggregate?" + q.Encode())
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(limit, w.Body)
+	}
+
+	//test next link
+	w = ht.Get("/trades/aggregate?" + q.Encode())
+	nextLink = ht.UnmarshalNext(w.Body)
+	w = ht.Get(nextLink)
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(numOfTrades/2-limit, w.Body)
+		ht.UnmarshalPage(w.Body, &records)
+		ht.Assert.Equal(int64(limit*minute), records[0].Timestamp)
+	}
+
+	//test direction (desc)
+	q.Add("order", "desc")
+	w = ht.Get("/trades/aggregate?" + q.Encode())
+	fmt.Println(w.Body)
+	if ht.Assert.Equal(200, w.Code) {
+		if ht.Assert.PageOf(limit, w.Body) {
+			ht.UnmarshalPage(w.Body, &records)
+			ht.Assert.Equal(int64(start+(numOfTrades/2-1)*minute), records[0].Timestamp)
+		}
+	}
+
+	//test next link desc
+	w = ht.Get("/trades/aggregate?" + q.Encode())
+	nextLink = ht.UnmarshalNext(w.Body)
+	w = ht.Get(nextLink)
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(numOfTrades/2-limit, w.Body)
+		ht.UnmarshalPage(w.Body, &records)
+	}
 }
 
 func TestTradeActions_IndexRegressions(t *testing.T) {
@@ -84,10 +174,5 @@ func TestTradeActions_IndexRegressions(t *testing.T) {
 
 	w := ht.Get("/trades?" + q.Encode())
 
-	ht.Assert.Equal(404, w.Code)
-
-	// Old version
-	//if ht.Assert.Equal(200, w.Code) {
-	//	ht.Assert.PageOf(0, w.Body)
-	//}
+	ht.Assert.Equal(404, w.Code) //This used to be 200 with length 0
 }
