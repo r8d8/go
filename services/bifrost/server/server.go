@@ -19,6 +19,7 @@ import (
 	"github.com/stellar/go/services/bifrost/ethereum"
 	"github.com/stellar/go/support/errors"
 	"github.com/stellar/go/support/log"
+	"github.com/stellar/go/xdr"
 )
 
 func (s *Server) Start() error {
@@ -119,6 +120,7 @@ func (s *Server) startHTTPServer() {
 	r.Get("/events", s.HandlerEvents)
 	r.Post("/generate-bitcoin-address", s.HandlerGenerateBitcoinAddress)
 	r.Post("/generate-ethereum-address", s.HandlerGenerateEthereumAddress)
+	r.Post("/recovery-transaction", s.HandlerRecoveryTransaction)
 
 	log.WithField("port", s.Config.Port).Info("Starting HTTP server")
 
@@ -203,7 +205,7 @@ func (s *Server) HandlerGenerateEthereumAddress(w http.ResponseWriter, r *http.R
 }
 
 func (s *Server) handlerGenerateAddress(w http.ResponseWriter, r *http.Request, chain database.Chain) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", s.Config.AccessControlAllowOriginHeader)
 
 	stellarPublicKey := r.PostFormValue("stellar_public_key")
 	_, err := keypair.Parse(stellarPublicKey)
@@ -268,4 +270,34 @@ func (s *Server) handlerGenerateAddress(w http.ResponseWriter, r *http.Request, 
 	}
 
 	w.Write(responseBytes)
+}
+
+func (s *Server) HandlerRecoveryTransaction(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", s.Config.AccessControlAllowOriginHeader)
+	var transactionEnvelope xdr.TransactionEnvelope
+	transactionXdr := r.PostFormValue("transaction_xdr")
+	localLog := log.WithField("transaction_xdr", transactionXdr)
+
+	if transactionXdr == "" {
+		localLog.Warn("Invalid input. No Transaction XDR")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err := xdr.SafeUnmarshalBase64(transactionXdr, &transactionEnvelope)
+	if err != nil {
+		localLog.WithField("err", err).Warn("Invalid Transaction XDR")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = s.Database.AddRecoveryTransaction(transactionEnvelope.Tx.SourceAccount.Address(), transactionXdr)
+	if err != nil {
+		localLog.WithField("err", err).Error("Error saving recovery transaction")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	return
 }

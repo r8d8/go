@@ -24,6 +24,7 @@ const (
 	keyValueStoreTableName        = "key_value_store"
 	processedTransactionTableName = "processed_transaction"
 	transactionsQueueTableName    = "transactions_queue"
+	recoveryTransactionTableName  = "recovery_transaction"
 )
 
 type keyValueStoreRow struct {
@@ -58,6 +59,11 @@ type processedTransactionRow struct {
 	TransactionID    string    `db:"transaction_id"`
 	ReceivingAddress string    `db:"receiving_address"`
 	CreatedAt        time.Time `db:"created_at"`
+}
+
+type recoveryTransactionRow struct {
+	Source      string `db:source`
+	EnvelopeXDR string `db:envelope_xdr`
 }
 
 func fromQueueTransaction(tx queue.Transaction) *transactionsQueueRow {
@@ -423,4 +429,12 @@ func (d *PostgresDatabase) getEventsLastID() (int64, error) {
 	}
 
 	return row.ID, nil
+}
+
+func (d *PostgresDatabase) AddRecoveryTransaction(sourceAccount string, txEnvelope string) error {
+	recoveryTransactionTable := d.getTable(recoveryTransactionTableName, nil)
+	recoveryTransaction := recoveryTransactionRow{Source: sourceAccount, EnvelopeXDR: txEnvelope}
+
+	_, err := recoveryTransactionTable.Insert(recoveryTransaction).Exec()
+	return err
 }

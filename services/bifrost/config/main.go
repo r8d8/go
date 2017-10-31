@@ -1,11 +1,13 @@
 package config
 
 type Config struct {
-	Port       int             `valid:"required"`
-	UsingProxy bool            `valid:"optional" toml:"using_proxy"`
-	Bitcoin    *bitcoinConfig  `valid:"optional" toml:"bitcoin"`
-	Ethereum   *ethereumConfig `valid:"optional" toml:"ethereum"`
-	Stellar    struct {
+	Port                           int             `valid:"required"`
+	UsingProxy                     bool            `valid:"optional" toml:"using_proxy"`
+	Bitcoin                        *bitcoinConfig  `valid:"optional" toml:"bitcoin"`
+	Ethereum                       *ethereumConfig `valid:"optional" toml:"ethereum"`
+	AccessControlAllowOriginHeader string          `valid:"optional" toml:"access-control-allow-origin-header"`
+
+	Stellar struct {
 		Horizon           string `valid:"required" toml:"horizon"`
 		NetworkPassphrase string `valid:"required" toml:"network_passphrase"`
 		// IssuerPublicKey is public key of the assets issuer or hot wallet.
