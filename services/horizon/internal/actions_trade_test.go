@@ -11,7 +11,6 @@ import (
 	. "github.com/stellar/go/services/horizon/internal/test/trades"
 	"strconv"
 	"github.com/stellar/go/xdr"
-	"fmt"
 )
 
 func TestTradeActions_Index(t *testing.T) {
@@ -143,7 +142,6 @@ func TestTradeActions_AggregationBasic(t *testing.T) {
 	//test direction (desc)
 	q.Add("order", "desc")
 	w = ht.Get("/trades/aggregate?" + q.Encode())
-	fmt.Println(w.Body)
 	if ht.Assert.Equal(200, w.Code) {
 		if ht.Assert.PageOf(limit, w.Body) {
 			ht.UnmarshalPage(w.Body, &records)
