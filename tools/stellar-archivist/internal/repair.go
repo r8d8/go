@@ -5,8 +5,8 @@
 package archivist
 
 import (
-	"fmt"
 	"log"
+	"fmt"
 )
 
 func Repair(src *Archive, dst *Archive, opts *CommandOptions) error {
@@ -61,3 +61,4 @@ func Repair(src *Archive, dst *Archive, opts *CommandOptions) error {
 	}
 	return nil
 }
+
