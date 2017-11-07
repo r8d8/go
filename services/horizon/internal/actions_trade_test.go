@@ -83,7 +83,7 @@ func setAssetQuery(q url.Values, prefix string, asset xdr.Asset) url.Values {
 	return q
 }
 
-func TestTradeActions_AggregationBasic(t *testing.T) {
+func TestTradeActions_Aggregation(t *testing.T) {
 	ht := StartHTTPTest(t, "base")
 	defer ht.Finish()
 
@@ -155,7 +155,16 @@ func TestTradeActions_AggregationBasic(t *testing.T) {
 	w = ht.Get(nextLink)
 	if ht.Assert.Equal(200, w.Code) {
 		ht.Assert.PageOf(numOfTrades/2-limit, w.Body)
-		ht.UnmarshalPage(w.Body, &records)
+	}
+
+	//test next next link empty
+	w = ht.Get("/trades/aggregate?" + q.Encode())
+	nextLink = ht.UnmarshalNext(w.Body)
+	w = ht.Get(nextLink)
+	nextLink = ht.UnmarshalNext(w.Body)
+	w = ht.Get(nextLink)
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(0, w.Body)
 	}
 }
 

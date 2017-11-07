@@ -133,32 +133,28 @@ func (action *TradeAggregateAction) loadParams() {
 func (action *TradeAggregateAction) loadRecords() {
 	err, bucketedTrades := action.HistoryQ().BucketTradesForAssetPair(action.BaseAssetFilter,
 		action.CounterAssetFilter, action.ResolutionFilter)
-	if err!=nil {
+	if err != nil {
 		action.Err = err
 		return
 	}
 
-	if action.StartTimeFilter > 0 {
-		if action.StartTimeFilter%action.ResolutionFilter != 0 {
-			// Push lower boundary to next bucket start
-			action.StartTimeFilter =
-				int64(action.StartTimeFilter/action.ResolutionFilter) * (action.ResolutionFilter + 1)
-		}
-		bucketedTrades.FromStartTime(action.StartTimeFilter)
+	// Push lower boundary to next bucket start
+	if action.StartTimeFilter%action.ResolutionFilter != 0 {
+		action.StartTimeFilter =
+			int64(action.StartTimeFilter/action.ResolutionFilter) * (action.ResolutionFilter + 1)
 	}
+	bucketedTrades.FromStartTime(action.StartTimeFilter)
 
-	if action.EndTimeFilter > 0 {
-		// Pull upper boundary to previous bucket start
-		action.EndTimeFilter = int64(action.EndTimeFilter/action.ResolutionFilter) * action.ResolutionFilter
-		bucketedTrades.FromEndTime(action.EndTimeFilter)
-	}
+	// Pull upper boundary to previous bucket start
+	action.EndTimeFilter = int64(action.EndTimeFilter/action.ResolutionFilter) * action.ResolutionFilter
+	bucketedTrades.FromEndTime(action.EndTimeFilter)
 
 	action.Err = bucketedTrades.OrderBy(action.PagingParams.Order).
 		SelectAggregateByBucket(&action.Records, action.PagingParams.Limit, action.PagingParams.Order)
 }
 
-
 func (action *TradeAggregateAction) loadPage() {
+	action.Page.Init()
 	for _, record := range action.Records {
 		var res resource.TradeAggregation
 
@@ -179,26 +175,25 @@ func (action *TradeAggregateAction) loadPage() {
 	base := action.Page.BasePath
 	action.Page.Links.Self = hal.NewLink(base + "?" + q.Encode())
 
-	//adjust time range for next pagegit
-	if uint64(len(action.Records)) < action.PagingParams.Limit {
-		action.Page.Links.Next = hal.NewLink("")
+	//adjust time range for next page
+	if uint64(len(action.Records)) == 0 {
+		action.Page.Links.Next = action.Page.Links.Self
 	} else {
 		if action.PagingParams.Order == "asc" {
 			newStartTime := action.Records[len(action.Records)-1].Timestamp + action.ResolutionFilter
 			if newStartTime >= action.EndTimeFilter {
-				action.Page.Links.Next = hal.NewLink("")
-			} else {
-				q.Set("start_time", strconv.FormatInt(newStartTime, 10))
-				action.Page.Links.Next = hal.NewLink(base + "?" + q.Encode())
+				newStartTime = action.EndTimeFilter
 			}
+			q.Set("start_time", strconv.FormatInt(newStartTime, 10))
+			action.Page.Links.Next = hal.NewLink(base + "?" + q.Encode())
+
 		} else { //desc
 			newEndTime := action.Records[len(action.Records)-1].Timestamp
 			if newEndTime <= action.StartTimeFilter {
 				newEndTime = action.StartTimeFilter
-			} else {
-				q.Set("end_time", strconv.FormatInt(newEndTime, 10))
-				action.Page.Links.Next = hal.NewLink(base + "?" + q.Encode())
 			}
+			q.Set("end_time", strconv.FormatInt(newEndTime, 10))
+			action.Page.Links.Next = hal.NewLink(base + "?" + q.Encode())
 		}
 	}
 }
