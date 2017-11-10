@@ -70,11 +70,6 @@ func (t *T) UnmarshalPage(r io.Reader, dest interface{}) {
 
 // UnmarshalNext extracts and returns the next link
 func (t *T) UnmarshalNext(r io.Reader) string {
-
-	type Link struct {
-		Href string `json:"href"`
-	}
-
 	var env struct {
 		Links struct {
 			Next struct {

@@ -36,15 +36,20 @@ func (q *Q) ReverseTrades() *TradesQ {
 	return trades.JoinAccounts().JoinAssets()
 }
 
+// formatBucketTimestampSelect formats a sql select clause for a bucketed timestamp, based on given resolution
+func formatBucketTimestampSelect(resolution int64) string {
+	return fmt.Sprintf("div(cast((extract(epoch from ledger_closed_at) * 1000 ) as bigint), %d)*%d as timestamp",
+		resolution, resolution)
+}
+
 // BucketTrades provides a helper to filter rows from the `history_trades` table in
 // a compact form, with a timestamp rounded to resolution.
 // For external use: see BucketTradesForAssetPair
 func (q *Q) bucketTrades(resolution int64) *TradesQ {
-	bucketedLedgerClosedAt := fmt.Sprintf("div(cast((extract(epoch from ledger_closed_at) * 1000 ) as bigint), %d)*%d as timestamp", resolution, resolution)
 	return &TradesQ{
 		parent: q,
 		sql: sq.Select(
-			bucketedLedgerClosedAt,
+			formatBucketTimestampSelect(resolution),
 			"base_asset_id",
 			"base_amount",
 			"counter_asset_id",
@@ -58,12 +63,10 @@ func (q *Q) bucketTrades(resolution int64) *TradesQ {
 // a compact form, with a timestamp rounded to resolution and reversed base/counter.
 // For external use: see BucketTradesForAssetPair
 func (q *Q) reverseBucketTrades(resolution int64) *TradesQ {
-	bucketedLedgerClosedAt := fmt.Sprintf("div(cast((extract(epoch from ledger_closed_at) * 1000 ) as bigint), %d)*%d as timestamp", resolution, resolution)
-
 	return &TradesQ{
 		parent: q,
 		sql: sq.Select(
-			bucketedLedgerClosedAt,
+			formatBucketTimestampSelect(resolution),
 			"counter_asset_id as base_asset_id",
 			"counter_amount as base_amount",
 			"base_asset_id as counter_asset_id",
