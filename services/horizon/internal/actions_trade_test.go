@@ -86,6 +86,7 @@ func TestTradeActions_Aggregation(t *testing.T) {
 	ht := StartHTTPTest(t, "base")
 	defer ht.Finish()
 
+	const aggregationPath = "/trade_aggregations"
 	const numOfTrades = 10
 	const start = 0
 	const second = 1000
@@ -106,7 +107,7 @@ func TestTradeActions_Aggregation(t *testing.T) {
 	q.Add("resolution", strconv.FormatInt(minute, 10))
 	q.Add("start_time", strconv.FormatInt(start, 10))
 	q.Add("end_time", strconv.FormatInt(start+hour, 10))
-	w := ht.GetWithParams("/trades/aggregate", q)
+	w := ht.GetWithParams(aggregationPath, q)
 	if ht.Assert.Equal(200, w.Code) {
 		ht.Assert.PageOf(numOfTrades, w.Body)
 	}
@@ -115,7 +116,7 @@ func TestTradeActions_Aggregation(t *testing.T) {
 	//half of the results are expected
 	endTime := start+(numOfTrades/2)*minute
 	q.Set("end_time", strconv.Itoa(endTime))
-	w = ht.GetWithParams("/trades/aggregate", q)
+	w = ht.GetWithParams(aggregationPath, q)
 	if ht.Assert.Equal(200, w.Code) {
 		ht.Assert.PageOf(numOfTrades/2, w.Body)
 	}
@@ -123,13 +124,13 @@ func TestTradeActions_Aggregation(t *testing.T) {
 	//test limit
 	limit := 3
 	q.Add("limit", strconv.Itoa(limit))
-	w = ht.GetWithParams("/trades/aggregate", q)
+	w = ht.GetWithParams(aggregationPath, q)
 	if ht.Assert.Equal(200, w.Code) {
 		ht.Assert.PageOf(limit, w.Body)
 	}
 
 	//test next link
-	w = ht.GetWithParams("/trades/aggregate", q)
+	w = ht.GetWithParams(aggregationPath, q)
 	nextLink = ht.UnmarshalNext(w.Body)
 	w = ht.Get(nextLink)
 	if ht.Assert.Equal(200, w.Code) {
@@ -140,7 +141,7 @@ func TestTradeActions_Aggregation(t *testing.T) {
 
 	//test direction (desc)
 	q.Add("order", "desc")
-	w = ht.GetWithParams("/trades/aggregate", q)
+	w = ht.GetWithParams(aggregationPath, q)
 	if ht.Assert.Equal(200, w.Code) {
 		if ht.Assert.PageOf(limit, w.Body) {
 			ht.UnmarshalPage(w.Body, &records)
@@ -149,7 +150,7 @@ func TestTradeActions_Aggregation(t *testing.T) {
 	}
 
 	//test next link desc
-	w = ht.GetWithParams("/trades/aggregate", q)
+	w = ht.GetWithParams(aggregationPath, q)
 	nextLink = ht.UnmarshalNext(w.Body)
 	w = ht.Get(nextLink)
 	if ht.Assert.Equal(200, w.Code) {
@@ -157,7 +158,7 @@ func TestTradeActions_Aggregation(t *testing.T) {
 	}
 
 	//test next next link empty
-	w = ht.GetWithParams("/trades/aggregate", q)
+	w = ht.GetWithParams(aggregationPath, q)
 	nextLink = ht.UnmarshalNext(w.Body)
 	w = ht.Get(nextLink)
 	nextLink = ht.UnmarshalNext(w.Body)
