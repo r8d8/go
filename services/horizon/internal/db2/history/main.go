@@ -252,6 +252,14 @@ type TradesQ struct {
 	sql    sq.SelectBuilder
 }
 
+// TradesQ is a helper struct to aid in configuring queries that loads
+// slices of trade structs.
+type TradeAggregationsQ struct {
+	Err    error
+	parent *Q
+	sql    sq.SelectBuilder
+}
+
 // Transaction is a row of data from the `history_transactions` table
 type Transaction struct {
 	TotalOrderID

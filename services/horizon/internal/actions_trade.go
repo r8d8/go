@@ -196,4 +196,7 @@ func (action *TradeAggregateAction) loadPage() {
 			action.Page.Links.Next = hal.NewLink(base + "?" + q.Encode())
 		}
 	}
-}
+
+
+
+	}
