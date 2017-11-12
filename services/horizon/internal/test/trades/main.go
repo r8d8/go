@@ -15,6 +15,7 @@ func getTestAsset(code string) xdr.Asset {
 }
 
 var accCounter byte
+
 //Get generates and returns an account on the fly
 func getTestAccount() xdr.AccountId {
 	accCounter++
@@ -23,6 +24,7 @@ func getTestAccount() xdr.AccountId {
 }
 
 var opCounter int64
+
 //ingestTestTrade mock ingests a trade
 func ingestTestTrade(
 	q *Q,
@@ -46,7 +48,7 @@ func ingestTestTrade(
 }
 
 //PopulateTestTrades generates and ingests trades between two assets according to given parameters
-func PopulateTestTrades(q *Q, startTs int64, numOfTrades int, delta int64) (err error, ass1 xdr.Asset, ass2 xdr.Asset){
+func PopulateTestTrades(q *Q, startTs int64, numOfTrades int, delta int64) (err error, ass1 xdr.Asset, ass2 xdr.Asset) {
 	acc1 := getTestAccount()
 	acc2 := getTestAccount()
 	ass1 = getTestAsset("usd")

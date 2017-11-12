@@ -5,8 +5,8 @@ import (
 
 	"github.com/stellar/go/services/horizon/internal/db2"
 	. "github.com/stellar/go/services/horizon/internal/db2/history"
-	. "github.com/stellar/go/services/horizon/internal/test/trades"
 	"github.com/stellar/go/services/horizon/internal/test"
+	. "github.com/stellar/go/services/horizon/internal/test/trades"
 	"github.com/stellar/go/xdr"
 )
 
@@ -72,7 +72,7 @@ func TestTradeAggQueries(t *testing.T) {
 	expected := TradeAggregation{start, 10, 5500, 38500, 5.5, 10, 1, 1, 10}
 	_, tradesQ := q.BucketTradesForAssetPair(ass1, ass2, hour)
 	tradesQ.FromStartTime(start).
-		FromEndTime(start + minute*(numOfTrades+1)).
+		FromEndTime(start+minute*(numOfTrades+1)).
 		SelectAggregateByBucket(&aggs, 10, "asc")
 
 	if tt.Assert.NoError(err) {
@@ -85,7 +85,7 @@ func TestTradeAggQueries(t *testing.T) {
 	expected = TradeAggregation{start, 10, 38500, 5500, 0.2928968253968254, 1, 0.1, 1, 0.1}
 	err, tradesQ = q.BucketTradesForAssetPair(ass2, ass1, hour)
 	err = tradesQ.FromStartTime(start).
-		FromEndTime(start + minute*(numOfTrades+1)).
+		FromEndTime(start+minute*(numOfTrades+1)).
 		SelectAggregateByBucket(&aggs, 10, "asc")
 
 	if tt.Assert.NoError(err) {
@@ -98,7 +98,7 @@ func TestTradeAggQueries(t *testing.T) {
 	expected = TradeAggregation{240000, 1, 500, 2500, 5, 5, 5, 5, 5}
 	err, tradesQ = q.BucketTradesForAssetPair(ass1, ass2, minute)
 	err = tradesQ.FromStartTime(start).
-		FromEndTime(start + minute*(numOfTrades+1)).
+		FromEndTime(start+minute*(numOfTrades+1)).
 		SelectAggregateByBucket(&aggs, 10, "asc")
 	if tt.Assert.NoError(err) {
 		if tt.Assert.Len(aggs, 10) {
@@ -110,7 +110,7 @@ func TestTradeAggQueries(t *testing.T) {
 	expected = TradeAggregation{240000, 2, 1100, 6100, 5.5, 6, 5, 5, 6}
 	err, tradesQ = q.BucketTradesForAssetPair(ass1, ass2, 2*minute)
 	err = tradesQ.FromStartTime(start).
-		FromEndTime(start + minute*(numOfTrades+1)).
+		FromEndTime(start+minute*(numOfTrades+1)).
 		SelectAggregateByBucket(&aggs, 10, "asc")
 	if tt.Assert.NoError(err) {
 		if tt.Assert.Len(aggs, 5) {

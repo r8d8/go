@@ -2,43 +2,37 @@ package history
 
 import (
 	"fmt"
-	"github.com/stellar/go/xdr"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/stellar/go/xdr"
 )
 
-// Return a query for bucketed trades
-func (q *Q) BucketTradesForAssetPair(baseAsset xdr.Asset, counterAsset xdr.Asset, bucketResolution int64)(err error, retval *TradeAggregationsQ) {
+// Aggregate bucket trades according to paging information
+func (q *Q) SelectTradeAggregations(dest interface{}, baseAsset xdr.Asset, counterAsset xdr.Asset, resolution, from int64, to int64, limit uint64, order string) error {
+
 	baseAssetId, err := q.GetAssetID(baseAsset)
 	if err != nil {
-		return
+		return err
 	}
 
 	counterAssetId, err := q.GetAssetID(counterAsset)
 	if err != nil {
-		return
+		return err
 	}
 
-	flipped, baseAssetId, counterAssetId := getCanonicalAssetOrder(baseAssetId, counterAssetId)
-	var trades *TradeAggregationsQ
-
-	if !flipped {
-		trades = q.bucketTrades(bucketResolution)
+	//prepare the trade buckets sql statement based on canonical ordering of assets
+	orderPreserved, baseAssetId, counterAssetId := getCanonicalAssetOrder(baseAssetId, counterAssetId)
+	var bucketSelect sq.SelectBuilder
+	if orderPreserved {
+		bucketSelect = q.bucketTrades(resolution)
 	} else {
-		trades = q.reverseBucketTrades(bucketResolution)
+		bucketSelect = q.reverseBucketTrades(resolution)
 	}
 
-	return nil, trades.forAssetPair(baseAssetId, counterAssetId)
-}
+	//adjust time range and apply filters
+	from, to = fixTimeRange(from, to, resolution)
+	bucketSelect = bucketSelect.Where(sq.GtOrEq{"ledger_closed_at": toTimestamp(from)}).
+		Where(sq.Lt{"ledger_closed_at": toTimestamp(to)})
 
-//Filter by asset pair. This function is private to ensure that correct order and proper select statement are coupled
-func (q *TradeAggregationsQ) forAssetPair(baseAssetId int64, counterAssetId int64) *TradeAggregationsQ {
-	q.sql = q.sql.Where(sq.Eq{"base_asset_id": baseAssetId, "counter_asset_id": counterAssetId})
-	return q
-}
-
-
-// Aggregate bucket trades according to paging information
-func (q *TradeAggregationsQ) SelectAggregateByBucket(dest interface{}, limit uint64, order string) error {
 	s := sq.Select(
 		"timestamp",
 		"count(*) as count",
@@ -49,13 +43,12 @@ func (q *TradeAggregationsQ) SelectAggregateByBucket(dest interface{}, limit uin
 		"min(price) as low",
 		"first(price) as open",
 		"last(price) as close").
-		FromSelect(q.sql, "htrd").
+		FromSelect(bucketSelect, "htrd").
 		GroupBy("timestamp").
 		Limit(limit).
 		OrderBy("timestamp " + order)
-	return q.parent.Select(dest, s)
+	return q.Select(dest, s)
 }
-
 
 // formatBucketTimestampSelect formats a sql select clause for a bucketed timestamp, based on given resolution
 func formatBucketTimestampSelect(resolution int64) string {
@@ -66,49 +59,41 @@ func formatBucketTimestampSelect(resolution int64) string {
 // BucketTrades provides a helper to filter rows from the `history_trades` table in
 // a compact form, with a timestamp rounded to resolution.
 // For external use: see BucketTradesForAssetPair
-func (q *Q) bucketTrades(resolution int64) *TradeAggregationsQ {
-	return &TradeAggregationsQ{
-		parent: q,
-		sql: sq.Select(
-			formatBucketTimestampSelect(resolution),
-			"base_asset_id",
-			"base_amount",
-			"counter_asset_id",
-			"counter_amount",
-			"counter_amount::float/base_amount as price",
-		).From("history_trades"),
-	}
+func (q *Q) bucketTrades(resolution int64) sq.SelectBuilder {
+	return sq.Select(
+		formatBucketTimestampSelect(resolution),
+		"base_asset_id",
+		"base_amount",
+		"counter_asset_id",
+		"counter_amount",
+		"counter_amount::float/base_amount as price",
+	).From("history_trades")
 }
 
 // ReverseBucketTrades provides a helper to filter rows from the `history_trades` table in
 // a compact form, with a timestamp rounded to resolution and reversed base/counter.
 // For external use: see BucketTradesForAssetPair
-func (q *Q) reverseBucketTrades(resolution int64) *TradeAggregationsQ {
-	return &TradeAggregationsQ{
-		parent: q,
-		sql: sq.Select(
-			formatBucketTimestampSelect(resolution),
-			"counter_asset_id as base_asset_id",
-			"counter_amount as base_amount",
-			"base_asset_id as counter_asset_id",
-			"base_amount as counter_amount",
-			"base_amount::float/counter_amount as price",
-		).From("history_trades"),
+func (q *Q) reverseBucketTrades(resolution int64) sq.SelectBuilder {
+	return sq.Select(
+		formatBucketTimestampSelect(resolution),
+		"counter_asset_id as base_asset_id",
+		"counter_amount as base_amount",
+		"base_asset_id as counter_asset_id",
+		"base_amount as counter_amount",
+		"base_amount::float/counter_amount as price",
+	).From("history_trades")
+}
+
+func fixTimeRange(startTime int64, endTime int64, resolution int64) (startTimeFixed int64, endTimeFixed int64) {
+	// Push lower boundary to next bucket start
+	if startTime%resolution != 0 {
+		startTimeFixed =
+			int64(startTime/resolution) * (resolution + 1)
+	} else {
+		startTimeFixed = startTime
 	}
-}
 
-
-func (q *TradeAggregationsQ) FromStartTime(from int64) *TradeAggregationsQ {
-	q.sql = q.sql.Where(sq.GtOrEq{"ledger_closed_at": toTimestamp(from)})
-	return q
-}
-
-func (q *TradeAggregationsQ) FromEndTime(to int64) *TradeAggregationsQ {
-	q.sql = q.sql.Where(sq.Lt{"ledger_closed_at": toTimestamp(to)})
-	return q
-}
-
-func (q *TradeAggregationsQ) OrderBy(order string) *TradeAggregationsQ {
-	q.sql = q.sql.OrderBy("ledger_closed_at " + order)
-	return q
+	// Pull upper boundary to previous bucket start
+	endTimeFixed = int64(endTime/resolution) * resolution
+	return
 }

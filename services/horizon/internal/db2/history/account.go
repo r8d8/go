@@ -77,5 +77,4 @@ func (q *Q) GetCreateAccountID(
 	return
 }
 
-
 var selectAccount = sq.Select("ha.*").From("history_accounts ha")

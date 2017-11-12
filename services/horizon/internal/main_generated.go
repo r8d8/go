@@ -118,7 +118,7 @@ func (action RootAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Requ
 }
 
 // ServeHTTPC is a method for web.Handler
-func (action TradeAggregateAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
+func (action TradeAggregateIndexAction) ServeHTTPC(c web.C, w http.ResponseWriter, r *http.Request) {
 	ap := &action.Action
 	ap.Prepare(c, w, r)
 	ap.Execute(&action)

@@ -39,11 +39,11 @@ func (q *Q) ReverseTrades() *TradesQ {
 // TradesForAssetPair provides a helper to filter rows from the `history_trades` table
 // with the base filter of a specific asset pair.  See `TradesQ` methods for further available filters.
 func (q *Q) TradesForAssetPair(baseAssetId int64, counterAssetId int64) *TradesQ {
-	flipped, baseAssetId, counterAssetId := getCanonicalAssetOrder(baseAssetId, counterAssetId)
+	orderPreserved, baseAssetId, counterAssetId := getCanonicalAssetOrder(baseAssetId, counterAssetId)
 	var trades *TradesQ
-	if !flipped {
+	if orderPreserved {
 		trades = q.Trades()
-	}  else {
+	} else {
 		trades = q.ReverseTrades()
 	}
 	return trades.forAssetPair(baseAssetId, counterAssetId)
@@ -203,14 +203,16 @@ func (q *Q) InsertTrade(
 		return errors.Wrap(err, "failed to get bought asset id")
 	}
 
-	flipped, baseAssetId, counterAssetId := getCanonicalAssetOrder(soldAssetId, boughtAssetId)
+	orderPreserved, baseAssetId, counterAssetId := getCanonicalAssetOrder(soldAssetId, boughtAssetId)
 
 	var baseAccountId, counterAccountId int64
 	var baseAmount, counterAmount xdr.Int64
-	if !flipped {
-		baseAccountId, baseAmount, counterAccountId, counterAmount = sellerAccountId, trade.AmountSold, buyerAccountId, trade.AmountBought
+	if orderPreserved {
+		baseAccountId, baseAmount, counterAccountId, counterAmount =
+			sellerAccountId, trade.AmountSold, buyerAccountId, trade.AmountBought
 	} else {
-		baseAccountId, baseAmount, counterAccountId, counterAmount = buyerAccountId, trade.AmountBought, sellerAccountId, trade.AmountSold
+		baseAccountId, baseAmount, counterAccountId, counterAmount =
+			buyerAccountId, trade.AmountBought, sellerAccountId, trade.AmountSold
 	}
 
 	sql := tradesInsert.Values(
@@ -224,7 +226,7 @@ func (q *Q) InsertTrade(
 		counterAccountId,
 		counterAssetId,
 		counterAmount,
-		soldAssetId < boughtAssetId,
+		orderPreserved,
 	)
 	_, err = q.Exec(sql)
 	if err != nil {
@@ -234,7 +236,7 @@ func (q *Q) InsertTrade(
 	return nil
 }
 
-func getCanonicalAssetOrder(assetId1 int64, assetId2 int64) (flipped bool, baseAssetId int64, counterAssetId int64) {
+func getCanonicalAssetOrder(assetId1 int64, assetId2 int64) (orderPreserved bool, baseAssetId int64, counterAssetId int64) {
 	if assetId1 < assetId2 {
 		return false, assetId1, assetId2
 	} else {

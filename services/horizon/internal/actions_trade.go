@@ -91,7 +91,7 @@ func (action *TradeIndexAction) loadPage() {
 	action.Page.PopulateLinks()
 }
 
-type TradeAggregateAction struct {
+type TradeAggregateIndexAction struct {
 	Action
 	BaseAssetFilter    xdr.Asset
 	CounterAssetFilter xdr.Asset
@@ -104,7 +104,7 @@ type TradeAggregateAction struct {
 }
 
 // JSON is a method for actions.JSON
-func (action *TradeAggregateAction) JSON() {
+func (action *TradeAggregateIndexAction) JSON() {
 	action.Do(
 		action.EnsureHistoryFreshness,
 		action.loadParams,
@@ -116,7 +116,7 @@ func (action *TradeAggregateAction) JSON() {
 	)
 }
 
-func (action *TradeAggregateAction) loadParams() {
+func (action *TradeAggregateIndexAction) loadParams() {
 	action.PagingParams = action.GetPageQuery()
 	action.BaseAssetFilter = action.GetAsset("base_")
 	action.CounterAssetFilter = action.GetAsset("counter_")
@@ -130,30 +130,19 @@ func (action *TradeAggregateAction) loadParams() {
 }
 
 // loadRecords populates action.Records
-func (action *TradeAggregateAction) loadRecords() {
-	err, bucketedTrades := action.HistoryQ().BucketTradesForAssetPair(action.BaseAssetFilter,
-		action.CounterAssetFilter, action.ResolutionFilter)
-	if err != nil {
-		action.Err = err
-		return
-	}
-
-	// Push lower boundary to next bucket start
-	if action.StartTimeFilter%action.ResolutionFilter != 0 {
-		action.StartTimeFilter =
-			int64(action.StartTimeFilter/action.ResolutionFilter) * (action.ResolutionFilter + 1)
-	}
-	bucketedTrades.FromStartTime(action.StartTimeFilter)
-
-	// Pull upper boundary to previous bucket start
-	action.EndTimeFilter = int64(action.EndTimeFilter/action.ResolutionFilter) * action.ResolutionFilter
-	bucketedTrades.FromEndTime(action.EndTimeFilter)
-
-	action.Err = bucketedTrades.OrderBy(action.PagingParams.Order).
-		SelectAggregateByBucket(&action.Records, action.PagingParams.Limit, action.PagingParams.Order)
+func (action *TradeAggregateIndexAction) loadRecords() {
+	action.Err = action.HistoryQ().SelectTradeAggregations(
+		&action.Records,
+		action.BaseAssetFilter,
+		action.CounterAssetFilter,
+		action.ResolutionFilter,
+		action.StartTimeFilter,
+		action.EndTimeFilter,
+		action.PagingParams.Limit,
+		action.PagingParams.Order)
 }
 
-func (action *TradeAggregateAction) loadPage() {
+func (action *TradeAggregateIndexAction) loadPage() {
 	action.Page.Init()
 	for _, record := range action.Records {
 		var res resource.TradeAggregation
@@ -197,6 +186,4 @@ func (action *TradeAggregateAction) loadPage() {
 		}
 	}
 
-
-
-	}
+}

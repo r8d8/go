@@ -42,7 +42,7 @@ func (ht *HTTPT) GetWithParams(
 	queryParams url.Values,
 	fn ...func(*http.Request),
 ) *httptest.ResponseRecorder {
-	return ht.RH.Get(path + "?" + queryParams.Encode(), fn...)
+	return ht.RH.Get(path+"?"+queryParams.Encode(), fn...)
 }
 
 // Finish closes the test app and finishes the test

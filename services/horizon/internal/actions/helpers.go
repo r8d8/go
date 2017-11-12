@@ -6,14 +6,14 @@ import (
 	"strconv"
 
 	"github.com/stellar/go/amount"
-	"github.com/stellar/go/strkey"
-	"github.com/stellar/go/support/errors"
-	"github.com/stellar/go/xdr"
 	"github.com/stellar/go/services/horizon/internal/assets"
 	"github.com/stellar/go/services/horizon/internal/db2"
 	"github.com/stellar/go/services/horizon/internal/ledger"
 	"github.com/stellar/go/services/horizon/internal/render/problem"
 	"github.com/stellar/go/services/horizon/internal/toid"
+	"github.com/stellar/go/strkey"
+	"github.com/stellar/go/support/errors"
+	"github.com/stellar/go/xdr"
 )
 
 const (
@@ -303,7 +303,7 @@ func (base *Base) GetAsset(prefix string) (result xdr.Asset) {
 // MaybeGetAsset decodes an asset from the request fields as GetAsset does, but
 // only if type field is populated. returns an additional boolean reflecting whether
 // or not the decoding was performed
-func (base *Base) MaybeGetAsset(prefix string) (xdr.Asset, bool){
+func (base *Base) MaybeGetAsset(prefix string) (xdr.Asset, bool) {
 	if base.Err != nil {
 		return xdr.Asset{}, false
 	}

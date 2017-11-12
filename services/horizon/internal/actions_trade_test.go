@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/stellar/go/services/horizon/internal/db2/history"
-	"github.com/stellar/go/services/horizon/internal/resource"
 	. "github.com/stellar/go/services/horizon/internal/db2/history"
+	"github.com/stellar/go/services/horizon/internal/resource"
 	. "github.com/stellar/go/services/horizon/internal/test/trades"
-	"strconv"
 	"github.com/stellar/go/xdr"
+	"strconv"
 )
 
 func TestTradeActions_Index(t *testing.T) {
@@ -74,7 +74,7 @@ func TestTradeActions_Index(t *testing.T) {
 }
 
 // setAssetQuery adds an asset filter with a given prefix to a query
-func setAssetQuery(q *url.Values, prefix string, asset xdr.Asset){
+func setAssetQuery(q *url.Values, prefix string, asset xdr.Asset) {
 	var assetType, assetCode, assetFilter string
 	asset.Extract(&assetType, &assetCode, &assetFilter)
 	q.Add(prefix+"asset_type", assetType)
@@ -114,7 +114,7 @@ func TestTradeActions_Aggregation(t *testing.T) {
 
 	//test partial range by modifying endTime to be one minute above half range.
 	//half of the results are expected
-	endTime := start+(numOfTrades/2)*minute
+	endTime := start + (numOfTrades/2)*minute
 	q.Set("end_time", strconv.Itoa(endTime))
 	w = ht.GetWithParams(aggregationPath, q)
 	if ht.Assert.Equal(200, w.Code) {

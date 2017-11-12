@@ -9,11 +9,11 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/guregu/null"
-	"github.com/stellar/go/support/errors"
-	"github.com/stellar/go/xdr"
 	"github.com/stellar/go/services/horizon/internal/db2/core"
 	"github.com/stellar/go/services/horizon/internal/db2/history"
 	"github.com/stellar/go/services/horizon/internal/db2/sqx"
+	"github.com/stellar/go/support/errors"
+	"github.com/stellar/go/xdr"
 )
 
 // ClearAll clears the entire history database
@@ -239,7 +239,7 @@ func (ingest *Ingestion) Trade(
 	if err != nil {
 		return errors.Wrap(err, "failed to load buyer account id")
 	}
-		soldAssetId, err := q.GetCreateAssetID(trade.AssetSold)
+	soldAssetId, err := q.GetCreateAssetID(trade.AssetSold)
 	if err != nil {
 		return errors.Wrap(err, "failed to get sold asset id")
 	}
