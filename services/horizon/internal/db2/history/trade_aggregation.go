@@ -6,7 +6,7 @@ import (
 	"github.com/stellar/go/services/horizon/internal/db2"
 )
 
-// GetTradeAggregationsQ initialized a TradeAggregationsQ query builder based on the required parameters
+// GetTradeAggregationsQ initializes a TradeAggregationsQ query builder based on the required parameters
 func GetTradeAggregationsQ(baseAssetId int64, counterAssetId int64, resolution int64, pagingParams db2.PageQuery) *TradeAggregationsQ {
 	return &TradeAggregationsQ{
 		BaseAssetId:    baseAssetId,

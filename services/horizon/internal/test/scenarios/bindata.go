@@ -113,7 +113,7 @@ func account_mergeCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "account_merge-core.sql", size: 24635, mode: os.FileMode(420), modTime: time.Unix(1509041024, 0)}
+	info := bindataFileInfo{name: "account_merge-core.sql", size: 24635, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -133,7 +133,7 @@ func account_mergeHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "account_merge-horizon.sql", size: 29754, mode: os.FileMode(420), modTime: time.Unix(1509041026, 0)}
+	info := bindataFileInfo{name: "account_merge-horizon.sql", size: 29754, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -153,7 +153,7 @@ func allow_trustCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "allow_trust-core.sql", size: 39055, mode: os.FileMode(420), modTime: time.Unix(1509041029, 0)}
+	info := bindataFileInfo{name: "allow_trust-core.sql", size: 39055, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -173,7 +173,7 @@ func allow_trustHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "allow_trust-horizon.sql", size: 46050, mode: os.FileMode(420), modTime: time.Unix(1509041031, 0)}
+	info := bindataFileInfo{name: "allow_trust-horizon.sql", size: 46050, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -193,7 +193,7 @@ func bad_costCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "bad_cost-core.sql", size: 29849, mode: os.FileMode(420), modTime: time.Unix(1508965224, 0)}
+	info := bindataFileInfo{name: "bad_cost-core.sql", size: 29849, mode: os.FileMode(420), modTime: time.Unix(1509940350, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -213,7 +213,7 @@ func bad_costHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "bad_cost-horizon.sql", size: 34334, mode: os.FileMode(420), modTime: time.Unix(1508965224, 0)}
+	info := bindataFileInfo{name: "bad_cost-horizon.sql", size: 34334, mode: os.FileMode(420), modTime: time.Unix(1509940350, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -233,7 +233,7 @@ func baseCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "base-core.sql", size: 25996, mode: os.FileMode(420), modTime: time.Unix(1509041035, 0)}
+	info := bindataFileInfo{name: "base-core.sql", size: 25996, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -253,7 +253,7 @@ func baseHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "base-horizon.sql", size: 31943, mode: os.FileMode(420), modTime: time.Unix(1509041036, 0)}
+	info := bindataFileInfo{name: "base-horizon.sql", size: 31943, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -273,7 +273,7 @@ func blankHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "blank-horizon.sql", size: 21840, mode: os.FileMode(420), modTime: time.Unix(1509041005, 0)}
+	info := bindataFileInfo{name: "blank-horizon.sql", size: 21840, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -293,7 +293,7 @@ func change_trustCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "change_trust-core.sql", size: 30181, mode: os.FileMode(420), modTime: time.Unix(1509041041, 0)}
+	info := bindataFileInfo{name: "change_trust-core.sql", size: 30181, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -313,7 +313,7 @@ func change_trustHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "change_trust-horizon.sql", size: 34994, mode: os.FileMode(420), modTime: time.Unix(1509041042, 0)}
+	info := bindataFileInfo{name: "change_trust-horizon.sql", size: 34994, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -333,7 +333,7 @@ func kahunaCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kahuna-core.sql", size: 180780, mode: os.FileMode(420), modTime: time.Unix(1509041048, 0)}
+	info := bindataFileInfo{name: "kahuna-core.sql", size: 180780, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -353,7 +353,7 @@ func kahunaHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kahuna-horizon.sql", size: 218989, mode: os.FileMode(420), modTime: time.Unix(1509041050, 0)}
+	info := bindataFileInfo{name: "kahuna-horizon.sql", size: 218989, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -373,7 +373,7 @@ func non_native_paymentCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "non_native_payment-core.sql", size: 32431, mode: os.FileMode(420), modTime: time.Unix(1509041054, 0)}
+	info := bindataFileInfo{name: "non_native_payment-core.sql", size: 32431, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -393,7 +393,7 @@ func non_native_paymentHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "non_native_payment-horizon.sql", size: 39944, mode: os.FileMode(420), modTime: time.Unix(1509041056, 0)}
+	info := bindataFileInfo{name: "non_native_payment-horizon.sql", size: 39944, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -413,7 +413,7 @@ func order_booksCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "order_books-core.sql", size: 58656, mode: os.FileMode(420), modTime: time.Unix(1509041060, 0)}
+	info := bindataFileInfo{name: "order_books-core.sql", size: 58656, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -433,7 +433,7 @@ func order_booksHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "order_books-horizon.sql", size: 73809, mode: os.FileMode(420), modTime: time.Unix(1509041061, 0)}
+	info := bindataFileInfo{name: "order_books-horizon.sql", size: 73809, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -453,7 +453,7 @@ func order_books_310CoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "order_books_310-core.sql", size: 94193, mode: os.FileMode(420), modTime: time.Unix(1509041066, 0)}
+	info := bindataFileInfo{name: "order_books_310-core.sql", size: 94193, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -473,7 +473,7 @@ func order_books_310HorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "order_books_310-horizon.sql", size: 111683, mode: os.FileMode(420), modTime: time.Unix(1509041067, 0)}
+	info := bindataFileInfo{name: "order_books_310-horizon.sql", size: 111683, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -493,7 +493,7 @@ func pathed_paymentCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pathed_payment-core.sql", size: 45122, mode: os.FileMode(420), modTime: time.Unix(1509041071, 0)}
+	info := bindataFileInfo{name: "pathed_payment-core.sql", size: 45122, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -513,7 +513,7 @@ func pathed_paymentHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pathed_payment-horizon.sql", size: 60932, mode: os.FileMode(420), modTime: time.Unix(1509041073, 0)}
+	info := bindataFileInfo{name: "pathed_payment-horizon.sql", size: 60932, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -533,7 +533,7 @@ func pathsCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "paths-core.sql", size: 75320, mode: os.FileMode(420), modTime: time.Unix(1509041077, 0)}
+	info := bindataFileInfo{name: "paths-core.sql", size: 75320, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -553,7 +553,7 @@ func pathsHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "paths-horizon.sql", size: 100430, mode: os.FileMode(420), modTime: time.Unix(1509041078, 0)}
+	info := bindataFileInfo{name: "paths-horizon.sql", size: 100430, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -573,7 +573,7 @@ func self_sendCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "self_send-core.sql", size: 23360, mode: os.FileMode(420), modTime: time.Unix(1509041083, 0)}
+	info := bindataFileInfo{name: "self_send-core.sql", size: 23360, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -593,7 +593,7 @@ func self_sendHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "self_send-horizon.sql", size: 27115, mode: os.FileMode(420), modTime: time.Unix(1509041084, 0)}
+	info := bindataFileInfo{name: "self_send-horizon.sql", size: 27115, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -613,7 +613,7 @@ func send_to_issuerCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "send_to_issuer-core.sql", size: 29638, mode: os.FileMode(420), modTime: time.Unix(1509041088, 0)}
+	info := bindataFileInfo{name: "send_to_issuer-core.sql", size: 29638, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -633,7 +633,7 @@ func send_to_issuerHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "send_to_issuer-horizon.sql", size: 35399, mode: os.FileMode(420), modTime: time.Unix(1509041089, 0)}
+	info := bindataFileInfo{name: "send_to_issuer-horizon.sql", size: 35399, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -653,7 +653,7 @@ func set_optionsCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "set_options-core.sql", size: 44215, mode: os.FileMode(420), modTime: time.Unix(1509041096, 0)}
+	info := bindataFileInfo{name: "set_options-core.sql", size: 44215, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -673,7 +673,7 @@ func set_optionsHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "set_options-horizon.sql", size: 48267, mode: os.FileMode(420), modTime: time.Unix(1509041100, 0)}
+	info := bindataFileInfo{name: "set_options-horizon.sql", size: 48267, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -693,7 +693,7 @@ func tradesCoreSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "trades-core.sql", size: 46526, mode: os.FileMode(420), modTime: time.Unix(1509041105, 0)}
+	info := bindataFileInfo{name: "trades-core.sql", size: 46526, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -713,7 +713,7 @@ func tradesHorizonSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "trades-horizon.sql", size: 59803, mode: os.FileMode(420), modTime: time.Unix(1509041106, 0)}
+	info := bindataFileInfo{name: "trades-horizon.sql", size: 59803, mode: os.FileMode(420), modTime: time.Unix(1510337983, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -770,37 +770,37 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"account_merge-core.sql":         account_mergeCoreSql,
-	"account_merge-horizon.sql":      account_mergeHorizonSql,
-	"allow_trust-core.sql":           allow_trustCoreSql,
-	"allow_trust-horizon.sql":        allow_trustHorizonSql,
-	"bad_cost-core.sql":              bad_costCoreSql,
-	"bad_cost-horizon.sql":           bad_costHorizonSql,
-	"base-core.sql":                  baseCoreSql,
-	"base-horizon.sql":               baseHorizonSql,
-	"blank-horizon.sql":              blankHorizonSql,
-	"change_trust-core.sql":          change_trustCoreSql,
-	"change_trust-horizon.sql":       change_trustHorizonSql,
-	"kahuna-core.sql":                kahunaCoreSql,
-	"kahuna-horizon.sql":             kahunaHorizonSql,
-	"non_native_payment-core.sql":    non_native_paymentCoreSql,
+	"account_merge-core.sql": account_mergeCoreSql,
+	"account_merge-horizon.sql": account_mergeHorizonSql,
+	"allow_trust-core.sql": allow_trustCoreSql,
+	"allow_trust-horizon.sql": allow_trustHorizonSql,
+	"bad_cost-core.sql": bad_costCoreSql,
+	"bad_cost-horizon.sql": bad_costHorizonSql,
+	"base-core.sql": baseCoreSql,
+	"base-horizon.sql": baseHorizonSql,
+	"blank-horizon.sql": blankHorizonSql,
+	"change_trust-core.sql": change_trustCoreSql,
+	"change_trust-horizon.sql": change_trustHorizonSql,
+	"kahuna-core.sql": kahunaCoreSql,
+	"kahuna-horizon.sql": kahunaHorizonSql,
+	"non_native_payment-core.sql": non_native_paymentCoreSql,
 	"non_native_payment-horizon.sql": non_native_paymentHorizonSql,
-	"order_books-core.sql":           order_booksCoreSql,
-	"order_books-horizon.sql":        order_booksHorizonSql,
-	"order_books_310-core.sql":       order_books_310CoreSql,
-	"order_books_310-horizon.sql":    order_books_310HorizonSql,
-	"pathed_payment-core.sql":        pathed_paymentCoreSql,
-	"pathed_payment-horizon.sql":     pathed_paymentHorizonSql,
-	"paths-core.sql":                 pathsCoreSql,
-	"paths-horizon.sql":              pathsHorizonSql,
-	"self_send-core.sql":             self_sendCoreSql,
-	"self_send-horizon.sql":          self_sendHorizonSql,
-	"send_to_issuer-core.sql":        send_to_issuerCoreSql,
-	"send_to_issuer-horizon.sql":     send_to_issuerHorizonSql,
-	"set_options-core.sql":           set_optionsCoreSql,
-	"set_options-horizon.sql":        set_optionsHorizonSql,
-	"trades-core.sql":                tradesCoreSql,
-	"trades-horizon.sql":             tradesHorizonSql,
+	"order_books-core.sql": order_booksCoreSql,
+	"order_books-horizon.sql": order_booksHorizonSql,
+	"order_books_310-core.sql": order_books_310CoreSql,
+	"order_books_310-horizon.sql": order_books_310HorizonSql,
+	"pathed_payment-core.sql": pathed_paymentCoreSql,
+	"pathed_payment-horizon.sql": pathed_paymentHorizonSql,
+	"paths-core.sql": pathsCoreSql,
+	"paths-horizon.sql": pathsHorizonSql,
+	"self_send-core.sql": self_sendCoreSql,
+	"self_send-horizon.sql": self_sendHorizonSql,
+	"send_to_issuer-core.sql": send_to_issuerCoreSql,
+	"send_to_issuer-horizon.sql": send_to_issuerHorizonSql,
+	"set_options-core.sql": set_optionsCoreSql,
+	"set_options-horizon.sql": set_optionsHorizonSql,
+	"trades-core.sql": tradesCoreSql,
+	"trades-horizon.sql": tradesHorizonSql,
 }
 
 // AssetDir returns the file names below a certain
@@ -842,39 +842,38 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
-
 var _bintree = &bintree{nil, map[string]*bintree{
-	"account_merge-core.sql":         &bintree{account_mergeCoreSql, map[string]*bintree{}},
-	"account_merge-horizon.sql":      &bintree{account_mergeHorizonSql, map[string]*bintree{}},
-	"allow_trust-core.sql":           &bintree{allow_trustCoreSql, map[string]*bintree{}},
-	"allow_trust-horizon.sql":        &bintree{allow_trustHorizonSql, map[string]*bintree{}},
-	"bad_cost-core.sql":              &bintree{bad_costCoreSql, map[string]*bintree{}},
-	"bad_cost-horizon.sql":           &bintree{bad_costHorizonSql, map[string]*bintree{}},
-	"base-core.sql":                  &bintree{baseCoreSql, map[string]*bintree{}},
-	"base-horizon.sql":               &bintree{baseHorizonSql, map[string]*bintree{}},
-	"blank-horizon.sql":              &bintree{blankHorizonSql, map[string]*bintree{}},
-	"change_trust-core.sql":          &bintree{change_trustCoreSql, map[string]*bintree{}},
-	"change_trust-horizon.sql":       &bintree{change_trustHorizonSql, map[string]*bintree{}},
-	"kahuna-core.sql":                &bintree{kahunaCoreSql, map[string]*bintree{}},
-	"kahuna-horizon.sql":             &bintree{kahunaHorizonSql, map[string]*bintree{}},
-	"non_native_payment-core.sql":    &bintree{non_native_paymentCoreSql, map[string]*bintree{}},
+	"account_merge-core.sql": &bintree{account_mergeCoreSql, map[string]*bintree{}},
+	"account_merge-horizon.sql": &bintree{account_mergeHorizonSql, map[string]*bintree{}},
+	"allow_trust-core.sql": &bintree{allow_trustCoreSql, map[string]*bintree{}},
+	"allow_trust-horizon.sql": &bintree{allow_trustHorizonSql, map[string]*bintree{}},
+	"bad_cost-core.sql": &bintree{bad_costCoreSql, map[string]*bintree{}},
+	"bad_cost-horizon.sql": &bintree{bad_costHorizonSql, map[string]*bintree{}},
+	"base-core.sql": &bintree{baseCoreSql, map[string]*bintree{}},
+	"base-horizon.sql": &bintree{baseHorizonSql, map[string]*bintree{}},
+	"blank-horizon.sql": &bintree{blankHorizonSql, map[string]*bintree{}},
+	"change_trust-core.sql": &bintree{change_trustCoreSql, map[string]*bintree{}},
+	"change_trust-horizon.sql": &bintree{change_trustHorizonSql, map[string]*bintree{}},
+	"kahuna-core.sql": &bintree{kahunaCoreSql, map[string]*bintree{}},
+	"kahuna-horizon.sql": &bintree{kahunaHorizonSql, map[string]*bintree{}},
+	"non_native_payment-core.sql": &bintree{non_native_paymentCoreSql, map[string]*bintree{}},
 	"non_native_payment-horizon.sql": &bintree{non_native_paymentHorizonSql, map[string]*bintree{}},
-	"order_books-core.sql":           &bintree{order_booksCoreSql, map[string]*bintree{}},
-	"order_books-horizon.sql":        &bintree{order_booksHorizonSql, map[string]*bintree{}},
-	"order_books_310-core.sql":       &bintree{order_books_310CoreSql, map[string]*bintree{}},
-	"order_books_310-horizon.sql":    &bintree{order_books_310HorizonSql, map[string]*bintree{}},
-	"pathed_payment-core.sql":        &bintree{pathed_paymentCoreSql, map[string]*bintree{}},
-	"pathed_payment-horizon.sql":     &bintree{pathed_paymentHorizonSql, map[string]*bintree{}},
-	"paths-core.sql":                 &bintree{pathsCoreSql, map[string]*bintree{}},
-	"paths-horizon.sql":              &bintree{pathsHorizonSql, map[string]*bintree{}},
-	"self_send-core.sql":             &bintree{self_sendCoreSql, map[string]*bintree{}},
-	"self_send-horizon.sql":          &bintree{self_sendHorizonSql, map[string]*bintree{}},
-	"send_to_issuer-core.sql":        &bintree{send_to_issuerCoreSql, map[string]*bintree{}},
-	"send_to_issuer-horizon.sql":     &bintree{send_to_issuerHorizonSql, map[string]*bintree{}},
-	"set_options-core.sql":           &bintree{set_optionsCoreSql, map[string]*bintree{}},
-	"set_options-horizon.sql":        &bintree{set_optionsHorizonSql, map[string]*bintree{}},
-	"trades-core.sql":                &bintree{tradesCoreSql, map[string]*bintree{}},
-	"trades-horizon.sql":             &bintree{tradesHorizonSql, map[string]*bintree{}},
+	"order_books-core.sql": &bintree{order_booksCoreSql, map[string]*bintree{}},
+	"order_books-horizon.sql": &bintree{order_booksHorizonSql, map[string]*bintree{}},
+	"order_books_310-core.sql": &bintree{order_books_310CoreSql, map[string]*bintree{}},
+	"order_books_310-horizon.sql": &bintree{order_books_310HorizonSql, map[string]*bintree{}},
+	"pathed_payment-core.sql": &bintree{pathed_paymentCoreSql, map[string]*bintree{}},
+	"pathed_payment-horizon.sql": &bintree{pathed_paymentHorizonSql, map[string]*bintree{}},
+	"paths-core.sql": &bintree{pathsCoreSql, map[string]*bintree{}},
+	"paths-horizon.sql": &bintree{pathsHorizonSql, map[string]*bintree{}},
+	"self_send-core.sql": &bintree{self_sendCoreSql, map[string]*bintree{}},
+	"self_send-horizon.sql": &bintree{self_sendHorizonSql, map[string]*bintree{}},
+	"send_to_issuer-core.sql": &bintree{send_to_issuerCoreSql, map[string]*bintree{}},
+	"send_to_issuer-horizon.sql": &bintree{send_to_issuerHorizonSql, map[string]*bintree{}},
+	"set_options-core.sql": &bintree{set_optionsCoreSql, map[string]*bintree{}},
+	"set_options-horizon.sql": &bintree{set_optionsHorizonSql, map[string]*bintree{}},
+	"trades-core.sql": &bintree{tradesCoreSql, map[string]*bintree{}},
+	"trades-horizon.sql": &bintree{tradesHorizonSql, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
@@ -923,3 +922,4 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
+

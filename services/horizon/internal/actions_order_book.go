@@ -3,12 +3,12 @@ package horizon
 import (
 	"net/http"
 
+	"github.com/stellar/go/xdr"
 	"github.com/stellar/go/services/horizon/internal/db2/core"
 	"github.com/stellar/go/services/horizon/internal/render/hal"
 	"github.com/stellar/go/services/horizon/internal/render/problem"
 	"github.com/stellar/go/services/horizon/internal/render/sse"
 	"github.com/stellar/go/services/horizon/internal/resource"
-	"github.com/stellar/go/xdr"
 )
 
 // OrderBookShowAction renders a account summary found by its address.
@@ -35,8 +35,8 @@ func (action *OrderBookShowAction) LoadQuery() {
 			Detail: "The parameters that specify what order book to view are invalid in some way. " +
 				"Please ensure that your type parameters (selling_asset_type and buying_asset_type) are one the " +
 				"following valid values: native, credit_alphanum4, credit_alphanum12.  Also ensure that you " +
-				"have specified selling_asset_code and selling_issuer if selling_asset_type is not 'native', as well " +
-				"as buying_asset_code and buying_issuer if buying_asset_type is not 'native'",
+				"have specified selling_asset_code and selling_asset_issuer if selling_asset_type is not 'native', as well " +
+				"as buying_asset_code and buying_asset_issuer if buying_asset_type is not 'native'",
 		}
 	}
 }
