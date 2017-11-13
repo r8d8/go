@@ -123,23 +123,36 @@ func (action *TradeAggregateIndexAction) loadParams() {
 	action.StartTimeFilter = action.GetInt64("start_time")
 	action.EndTimeFilter = action.GetInt64("end_time")
 	action.ResolutionFilter = action.GetInt64("resolution")
-
-	if action.ResolutionFilter == 0 {
-		action.ResolutionFilter = 1
-	}
 }
 
 // loadRecords populates action.Records
 func (action *TradeAggregateIndexAction) loadRecords() {
-	action.Err = action.HistoryQ().SelectTradeAggregations(
-		&action.Records,
-		action.BaseAssetFilter,
-		action.CounterAssetFilter,
-		action.ResolutionFilter,
-		action.StartTimeFilter,
-		action.EndTimeFilter,
-		action.PagingParams.Limit,
-		action.PagingParams.Order)
+	db := action.HistoryQ()
+
+	//get asset ids
+	baseAssetId, err := db.GetCreateAssetID(action.BaseAssetFilter)
+	if err != nil {
+		action.Err = err
+		return
+	}
+	counterAssetId, err := db.GetCreateAssetID(action.CounterAssetFilter)
+	if err != nil {
+		action.Err = err
+		return
+	}
+
+	//initialize the query builder with required params
+	tradeAggregationsQ := history.GetTradeAggregationsQ(
+		baseAssetId, counterAssetId, action.ResolutionFilter, action.PagingParams)
+
+	//set time range if supplied
+	if action.StartTimeFilter > 0 {
+		tradeAggregationsQ.WithStartTime(action.StartTimeFilter)
+	}
+	if action.EndTimeFilter > 0 {
+		tradeAggregationsQ.WithEndTime(action.EndTimeFilter)
+	}
+	db.Select(&action.Records, tradeAggregationsQ.GetSql())
 }
 
 func (action *TradeAggregateIndexAction) loadPage() {
@@ -185,5 +198,4 @@ func (action *TradeAggregateIndexAction) loadPage() {
 			action.Page.Links.Next = hal.NewLink(base + "?" + q.Encode())
 		}
 	}
-
 }

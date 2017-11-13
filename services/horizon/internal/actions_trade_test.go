@@ -88,7 +88,7 @@ func TestTradeActions_Aggregation(t *testing.T) {
 
 	const aggregationPath = "/trade_aggregations"
 	const numOfTrades = 10
-	const start = 0
+	const start = 1000*60*60*24
 	const second = 1000
 	const minute = 60 * second
 	const hour = minute * 60
@@ -121,7 +121,7 @@ func TestTradeActions_Aggregation(t *testing.T) {
 		ht.Assert.PageOf(numOfTrades/2, w.Body)
 	}
 
-	//test limit
+	//test that page limit works
 	limit := 3
 	q.Add("limit", strconv.Itoa(limit))
 	w = ht.GetWithParams(aggregationPath, q)
@@ -129,14 +129,15 @@ func TestTradeActions_Aggregation(t *testing.T) {
 		ht.Assert.PageOf(limit, w.Body)
 	}
 
-	//test next link
+	//test that next page delivers the correct amount of records
 	w = ht.GetWithParams(aggregationPath, q)
 	nextLink = ht.UnmarshalNext(w.Body)
 	w = ht.Get(nextLink)
 	if ht.Assert.Equal(200, w.Code) {
 		ht.Assert.PageOf(numOfTrades/2-limit, w.Body)
 		ht.UnmarshalPage(w.Body, &records)
-		ht.Assert.Equal(int64(limit*minute), records[0].Timestamp)
+		//test for expected value on timestamp of first record on next page
+		ht.Assert.Equal(int64(start+limit*minute), records[0].Timestamp)
 	}
 
 	//test direction (desc)

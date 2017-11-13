@@ -8,6 +8,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/guregu/null"
+	"github.com/stellar/go/services/horizon/internal/db2"
 	"github.com/stellar/go/support/db"
 	"github.com/stellar/go/xdr"
 )
@@ -253,11 +254,14 @@ type TradesQ struct {
 }
 
 // TradeAggregationsQ is a helper struct to aid in configuring queries to
-// bucket and then aggregate trades
+// bucket and aggregate trades
 type TradeAggregationsQ struct {
-	Err    error
-	parent *Q
-	sql    sq.SelectBuilder
+	BaseAssetId    int64
+	CounterAssetId int64
+	Resolution     int64
+	StartTime      int64
+	EndTime        int64
+	PagingParams   db2.PageQuery
 }
 
 // Transaction is a row of data from the `history_transactions` table

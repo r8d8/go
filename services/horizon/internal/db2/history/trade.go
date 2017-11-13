@@ -193,6 +193,7 @@ func (q *Q) InsertTrade(
 	if err != nil {
 		return errors.Wrap(err, "failed to load buyer account id")
 	}
+
 	soldAssetId, err := q.GetCreateAssetID(trade.AssetSold)
 	if err != nil {
 		return errors.Wrap(err, "failed to get sold asset id")
@@ -238,8 +239,8 @@ func (q *Q) InsertTrade(
 
 func getCanonicalAssetOrder(assetId1 int64, assetId2 int64) (orderPreserved bool, baseAssetId int64, counterAssetId int64) {
 	if assetId1 < assetId2 {
-		return false, assetId1, assetId2
+		return true, assetId1, assetId2
 	} else {
-		return true, assetId2, assetId1
+		return false, assetId2, assetId1
 	}
 }
