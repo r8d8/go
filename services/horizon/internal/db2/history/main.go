@@ -232,7 +232,7 @@ type Trade struct {
 	BaseIsSeller       bool      `db:"base_is_seller"`
 }
 
-// Trade aggregation represents ann aggregation of trades from the trades table
+// Trade aggregation represents an aggregation of trades from the trades table
 type TradeAggregation struct {
 	Timestamp     int64   `db:"timestamp"`
 	TradeCount    int64   `db:"count"`
