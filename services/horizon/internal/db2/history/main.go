@@ -291,8 +291,3 @@ func (q *Q) OldestOutdatedLedgers(dest interface{}, currentVersion int) error {
 		ORDER BY sequence ASC
 		LIMIT 1000000`, currentVersion)
 }
-
-// Utility function to translate millis since epoch int64 to a UTC timestamp struct
-func toTimestamp(millis int64) time.Time {
-	return time.Unix(millis/1000, millis%100*int64(time.Millisecond)).UTC()
-}

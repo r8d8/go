@@ -4,6 +4,7 @@ import (
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/stellar/go/services/horizon/internal/db2"
+	. "github.com/stellar/go/support/time"
 )
 
 // Trade aggregation represents an aggregation of trades from the trades table
@@ -25,8 +26,8 @@ type TradeAggregationsQ struct {
 	baseAssetId    int64
 	counterAssetId int64
 	resolution     int64
-	startTime      int64
-	endTime        int64
+	startTime      TimeMillis
+	endTime        TimeMillis
 	pagingParams   db2.PageQuery
 }
 
@@ -41,19 +42,16 @@ func (q Q) GetTradeAggregationsQ(baseAssetId int64, counterAssetId int64, resolu
 }
 
 // WithStartTime adds an optional lower time boundary filter to the trades being aggregated
-func (q *TradeAggregationsQ) WithStartTime(startTime int64) *TradeAggregationsQ {
-	q.startTime = startTime
+func (q *TradeAggregationsQ) WithStartTime(startTime TimeMillis) *TradeAggregationsQ {
 	// Round lower boundary up, if start time is in the middle of a bucket
-	if q.startTime%q.resolution != 0 {
-		q.startTime = int64(q.startTime/q.resolution) * (q.resolution + 1)
-	}
+	q.startTime = startTime.RoundUp(q.resolution)
 	return q
 }
 
 // WithEndTime adds an upper optional time boundary filter to the trades being aggregated
-func (q *TradeAggregationsQ) WithEndTime(endTime int64) *TradeAggregationsQ {
+func (q *TradeAggregationsQ) WithEndTime(endTime TimeMillis) *TradeAggregationsQ {
 	// Round upper boundary down, to not deliver partial bucket
-	q.endTime = int64(endTime/q.resolution) * q.resolution
+	q.endTime = endTime.RoundDown(q.resolution)
 	return q
 }
 
@@ -71,9 +69,9 @@ func (q *TradeAggregationsQ) GetSql() sq.SelectBuilder {
 	bucketSql = bucketSql.From("history_trades")
 
 	//adjust time range and apply time filters
-	bucketSql = bucketSql.Where(sq.GtOrEq{"ledger_closed_at": toTimestamp(q.startTime)})
-	if q.endTime > 0 {
-		bucketSql = bucketSql.Where(sq.Lt{"ledger_closed_at": toTimestamp(q.endTime)})
+	bucketSql = bucketSql.Where(sq.GtOrEq{"ledger_closed_at": q.startTime.ToDate()})
+	if !q.endTime.IsNull() {
+		bucketSql = bucketSql.Where(sq.Lt{"ledger_closed_at": q.endTime.ToDate()})
 	}
 
 	return sq.Select(

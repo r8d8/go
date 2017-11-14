@@ -7,6 +7,7 @@ import (
 	"github.com/stellar/go/services/horizon/internal/db2/history"
 	"github.com/stellar/go/services/horizon/internal/render/hal"
 	"github.com/stellar/go/services/horizon/internal/resource"
+	"github.com/stellar/go/support/time"
 	"github.com/stellar/go/xdr"
 	"strconv"
 )
@@ -95,8 +96,8 @@ type TradeAggregateIndexAction struct {
 	Action
 	BaseAssetFilter    xdr.Asset
 	CounterAssetFilter xdr.Asset
-	StartTimeFilter    int64
-	EndTimeFilter      int64
+	StartTimeFilter    time.TimeMillis
+	EndTimeFilter      time.TimeMillis
 	ResolutionFilter   int64
 	PagingParams       db2.PageQuery
 	Records            []history.TradeAggregation
@@ -120,8 +121,8 @@ func (action *TradeAggregateIndexAction) loadParams() {
 	action.PagingParams = action.GetPageQuery()
 	action.BaseAssetFilter = action.GetAsset("base_")
 	action.CounterAssetFilter = action.GetAsset("counter_")
-	action.StartTimeFilter = action.GetInt64("start_time")
-	action.EndTimeFilter = action.GetInt64("end_time")
+	action.StartTimeFilter = action.GetTimeMillis("start_time")
+	action.EndTimeFilter = action.GetTimeMillis("end_time")
 	action.ResolutionFilter = action.GetInt64("resolution")
 }
 
@@ -146,10 +147,10 @@ func (action *TradeAggregateIndexAction) loadRecords() {
 		baseAssetId, counterAssetId, action.ResolutionFilter, action.PagingParams)
 
 	//set time range if supplied
-	if action.StartTimeFilter > 0 {
+	if !action.StartTimeFilter.IsNull() {
 		tradeAggregationsQ.WithStartTime(action.StartTimeFilter)
 	}
-	if action.EndTimeFilter > 0 {
+	if !action.EndTimeFilter.IsNull() {
 		tradeAggregationsQ.WithEndTime(action.EndTimeFilter)
 	}
 	historyQ.Select(&action.Records, tradeAggregationsQ.GetSql())
@@ -183,16 +184,16 @@ func (action *TradeAggregateIndexAction) loadPage() {
 	} else {
 		if action.PagingParams.Order == "asc" {
 			newStartTime := action.Records[len(action.Records)-1].Timestamp + action.ResolutionFilter
-			if newStartTime >= action.EndTimeFilter {
-				newStartTime = action.EndTimeFilter
+			if newStartTime >= action.EndTimeFilter.Millis() {
+				newStartTime = action.EndTimeFilter.Millis()
 			}
 			q.Set("start_time", strconv.FormatInt(newStartTime, 10))
 			action.Page.Links.Next = hal.NewLink(base + "?" + q.Encode())
 
 		} else { //desc
 			newEndTime := action.Records[len(action.Records)-1].Timestamp
-			if newEndTime <= action.StartTimeFilter {
-				newEndTime = action.StartTimeFilter
+			if newEndTime <= action.StartTimeFilter.Millis() {
+				newEndTime = action.StartTimeFilter.Millis()
 			}
 			q.Set("end_time", strconv.FormatInt(newEndTime, 10))
 			action.Page.Links.Next = hal.NewLink(base + "?" + q.Encode())

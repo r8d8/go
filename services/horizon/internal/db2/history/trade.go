@@ -8,7 +8,7 @@ import (
 	"github.com/stellar/go/services/horizon/internal/db2"
 	"github.com/stellar/go/support/errors"
 	"github.com/stellar/go/xdr"
-	"time"
+	"github.com/stellar/go/support/time"
 )
 
 // PagingToken returns a cursor for this trade
@@ -219,7 +219,7 @@ func (q *Q) InsertTrade(
 	sql := tradesInsert.Values(
 		opid,
 		order,
-		time.Unix(ledgerClosedAt/1000, 0).UTC(),
+		time.FromMillis(ledgerClosedAt).ToDate(),
 		trade.OfferId,
 		baseAccountId,
 		baseAssetId,
