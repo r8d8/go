@@ -127,22 +127,22 @@ func (action *TradeAggregateIndexAction) loadParams() {
 
 // loadRecords populates action.Records
 func (action *TradeAggregateIndexAction) loadRecords() {
-	db := action.HistoryQ()
+	historyQ := action.HistoryQ()
 
 	//get asset ids
-	baseAssetId, err := db.GetCreateAssetID(action.BaseAssetFilter)
+	baseAssetId, err := historyQ.GetCreateAssetID(action.BaseAssetFilter)
 	if err != nil {
 		action.Err = err
 		return
 	}
-	counterAssetId, err := db.GetCreateAssetID(action.CounterAssetFilter)
+	counterAssetId, err := historyQ.GetCreateAssetID(action.CounterAssetFilter)
 	if err != nil {
 		action.Err = err
 		return
 	}
 
 	//initialize the query builder with required params
-	tradeAggregationsQ := history.GetTradeAggregationsQ(
+	tradeAggregationsQ := historyQ.GetTradeAggregationsQ(
 		baseAssetId, counterAssetId, action.ResolutionFilter, action.PagingParams)
 
 	//set time range if supplied
@@ -152,7 +152,7 @@ func (action *TradeAggregateIndexAction) loadRecords() {
 	if action.EndTimeFilter > 0 {
 		tradeAggregationsQ.WithEndTime(action.EndTimeFilter)
 	}
-	db.Select(&action.Records, tradeAggregationsQ.GetSql())
+	historyQ.Select(&action.Records, tradeAggregationsQ.GetSql())
 }
 
 func (action *TradeAggregateIndexAction) loadPage() {

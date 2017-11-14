@@ -7,21 +7,21 @@ import (
 )
 
 // GetTradeAggregationsQ initializes a TradeAggregationsQ query builder based on the required parameters
-func GetTradeAggregationsQ(baseAssetId int64, counterAssetId int64, resolution int64, pagingParams db2.PageQuery) *TradeAggregationsQ {
+func (q Q) GetTradeAggregationsQ(baseAssetId int64, counterAssetId int64, resolution int64, pagingParams db2.PageQuery) *TradeAggregationsQ {
 	return &TradeAggregationsQ{
-		BaseAssetId:    baseAssetId,
-		CounterAssetId: counterAssetId,
-		Resolution:     resolution,
-		PagingParams:   pagingParams,
+		baseAssetId:    baseAssetId,
+		counterAssetId: counterAssetId,
+		resolution:     resolution,
+		pagingParams:   pagingParams,
 	}
 }
 
 // WithStartTime adds an optional lower time boundary filter to the trades being aggregated
 func (q *TradeAggregationsQ) WithStartTime(startTime int64) *TradeAggregationsQ {
-	q.StartTime = startTime
+	q.startTime = startTime
 	// Round lower boundary up, if start time is in the middle of a bucket
-	if q.StartTime%q.Resolution != 0 {
-		q.StartTime = int64(q.StartTime/q.Resolution) * (q.Resolution + 1)
+	if q.startTime%q.resolution != 0 {
+		q.startTime = int64(q.startTime/q.resolution) * (q.resolution + 1)
 	}
 	return q
 }
@@ -29,27 +29,27 @@ func (q *TradeAggregationsQ) WithStartTime(startTime int64) *TradeAggregationsQ 
 // WithEndTime adds an upper optional time boundary filter to the trades being aggregated
 func (q *TradeAggregationsQ) WithEndTime(endTime int64) *TradeAggregationsQ {
 	// Round upper boundary down, to not deliver partial bucket
-	q.EndTime = int64(endTime/q.Resolution) * q.Resolution
+	q.endTime = int64(endTime/q.resolution) * q.resolution
 	return q
 }
 
 // Generate a sql statement to aggregate Trades based on given parameters
 func (q *TradeAggregationsQ) GetSql() sq.SelectBuilder {
 	var orderPreserved bool
-	orderPreserved, q.BaseAssetId, q.CounterAssetId = getCanonicalAssetOrder(q.BaseAssetId, q.CounterAssetId)
+	orderPreserved, q.baseAssetId, q.counterAssetId = getCanonicalAssetOrder(q.baseAssetId, q.counterAssetId)
 
 	var bucketSql sq.SelectBuilder
 	if orderPreserved {
-		bucketSql = bucketTrades(q.Resolution)
+		bucketSql = bucketTrades(q.resolution)
 	} else {
-		bucketSql = reverseBucketTrades(q.Resolution)
+		bucketSql = reverseBucketTrades(q.resolution)
 	}
 	bucketSql = bucketSql.From("history_trades")
 
 	//adjust time range and apply time filters
-	bucketSql = bucketSql.Where(sq.GtOrEq{"ledger_closed_at": toTimestamp(q.StartTime)})
-	if q.EndTime > 0 {
-		bucketSql = bucketSql.Where(sq.Lt{"ledger_closed_at": toTimestamp(q.EndTime)})
+	bucketSql = bucketSql.Where(sq.GtOrEq{"ledger_closed_at": toTimestamp(q.startTime)})
+	if q.endTime > 0 {
+		bucketSql = bucketSql.Where(sq.Lt{"ledger_closed_at": toTimestamp(q.endTime)})
 	}
 
 	return sq.Select(
@@ -64,8 +64,8 @@ func (q *TradeAggregationsQ) GetSql() sq.SelectBuilder {
 		"last(price) as close").
 		FromSelect(bucketSql, "htrd").
 		GroupBy("timestamp").
-		Limit(q.PagingParams.Limit).
-		OrderBy("timestamp " + q.PagingParams.Order)
+		Limit(q.pagingParams.Limit).
+		OrderBy("timestamp " + q.pagingParams.Order)
 }
 
 // formatBucketTimestampSelect formats a sql select clause for a bucketed timestamp, based on given resolution

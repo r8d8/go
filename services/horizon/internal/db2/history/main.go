@@ -256,12 +256,12 @@ type TradesQ struct {
 // TradeAggregationsQ is a helper struct to aid in configuring queries to
 // bucket and aggregate trades
 type TradeAggregationsQ struct {
-	BaseAssetId    int64
-	CounterAssetId int64
-	Resolution     int64
-	StartTime      int64
-	EndTime        int64
-	PagingParams   db2.PageQuery
+	baseAssetId    int64
+	counterAssetId int64
+	resolution     int64
+	startTime      int64
+	endTime        int64
+	pagingParams   db2.PageQuery
 }
 
 // Transaction is a row of data from the `history_transactions` table
