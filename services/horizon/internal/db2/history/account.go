@@ -56,23 +56,23 @@ func (q *Q) GetCreateAccountID(
 
 	err = q.AccountByAddress(&existing, aid.Address())
 
-	if err != nil && !q.NoRows(err) {
-		return
-	}
-
-	// already imported, return the found value
-	if !q.NoRows(err) {
+	//account already exists, return id
+	if err == nil {
 		result = existing.ID
 		return
 	}
+
+	// unexpected error
+	if !q.NoRows(err) {
+		return
+	}
+
+	//insert account and return id
 	err = q.GetRaw(
 		&result,
 		`INSERT INTO history_accounts (address) VALUES (?) RETURNING id`,
 		aid.Address(),
 	)
-	if err != nil {
-		return
-	}
 
 	return
 }

@@ -40,15 +40,17 @@ func (q *Q) GetCreateAssetID(
 
 	result, err = q.GetAssetID(asset)
 
-	if err != nil && !q.NoRows(err) {
+	//asset exists, return id
+	if err == nil {
 		return
 	}
 
-	// already imported, return the found value
+	//unexpected error
 	if !q.NoRows(err) {
-		return result, nil
+		return
 	}
 
+	//insert asset and return id
 	var (
 		assetType   string
 		assetCode   string
