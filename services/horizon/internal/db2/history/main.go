@@ -8,7 +8,6 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/guregu/null"
-	"github.com/stellar/go/services/horizon/internal/db2"
 	"github.com/stellar/go/support/db"
 	"github.com/stellar/go/xdr"
 )
@@ -232,36 +231,12 @@ type Trade struct {
 	BaseIsSeller       bool      `db:"base_is_seller"`
 }
 
-// Trade aggregation represents an aggregation of trades from the trades table
-type TradeAggregation struct {
-	Timestamp     int64   `db:"timestamp"`
-	TradeCount    int64   `db:"count"`
-	BaseVolume    int64   `db:"base_volume"`
-	CounterVolume int64   `db:"counter_volume"`
-	Average       float64 `db:"avg"`
-	High          float64 `db:"high"`
-	Low           float64 `db:"low"`
-	Open          float64 `db:"open"`
-	Close         float64 `db:"close"`
-}
-
 // TradesQ is a helper struct to aid in configuring queries that loads
 // slices of trade structs.
 type TradesQ struct {
 	Err    error
 	parent *Q
 	sql    sq.SelectBuilder
-}
-
-// TradeAggregationsQ is a helper struct to aid in configuring queries to
-// bucket and aggregate trades
-type TradeAggregationsQ struct {
-	baseAssetId    int64
-	counterAssetId int64
-	resolution     int64
-	startTime      int64
-	endTime        int64
-	pagingParams   db2.PageQuery
 }
 
 // Transaction is a row of data from the `history_transactions` table
