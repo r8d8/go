@@ -45,6 +45,7 @@ type Account struct {
 	Thresholds           AccountThresholds `json:"thresholds"`
 	Flags                AccountFlags      `json:"flags"`
 	Balances             []Balance         `json:"balances"`
+	UnauthorizedBalances []Balance         `json:"unauthorized_balances"`
 	Signers              []Signer          `json:"signers"`
 	Data                 map[string]string `json:"data"`
 }
@@ -73,7 +74,7 @@ type Balance struct {
 	base.Asset
 }
 
-// HistoryAccount is a simple resource, used for the account collection actions.
+// HistoryAccount is a simple resou	rce, used for the account collection actions.
 // It provides only the "TotalOrderID" of the account and its account id.
 type HistoryAccount struct {
 	ID        string `json:"id"`

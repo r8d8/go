@@ -30,10 +30,21 @@ func (this *Account) Populate(
 	this.Flags.Populate(ca)
 	this.Thresholds.Populate(ca)
 
+	authTl, unauthTl := splitTrustlines(ct)
+
 	// populate balances
-	this.Balances = make([]Balance, len(ct)+1)
-	for i, tl := range ct {
+	this.Balances = make([]Balance, len(authTl)+1)
+	for i, tl := range authTl {
 		err = this.Balances[i].Populate(ctx, tl)
+		if err != nil {
+			return
+		}
+	}
+
+	// populate unauthorized balances
+	this.UnauthorizedBalances = make([]Balance, len(unauthTl)+1)
+	for i, tl := range unauthTl {
+		err = this.UnauthorizedBalances[i].Populate(ctx, tl)
 		if err != nil {
 			return
 		}
@@ -88,4 +99,21 @@ func (this *Account) MustGetData(key string) []byte {
 // not exist, empty slice will be returned.
 func (this *Account) GetData(key string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(this.Data[key])
+}
+
+/// splitTrustlines splits trustlines into authorized/unauthorized arrays
+func splitTrustlines(ct []core.Trustline) (authorized, unauthorized []core.Trustline) {
+	authorized = make([]core.Trustline, 0)
+	unauthorized = make([]core.Trustline, 0)
+
+	for _, tl := range ct {
+		switch tl.Flags {
+		case 1:
+			authorized = append(authorized, tl)
+		case 0:
+			unauthorized = append(unauthorized, tl)
+		}
+	}
+
+	return
 }
