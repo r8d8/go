@@ -3,12 +3,12 @@ package ingest
 import (
 	"testing"
 
+	"github.com/stellar/go/services/horizon/internal/db2/core"
+	"github.com/stellar/go/services/horizon/internal/db2/history"
+	"github.com/stellar/go/services/horizon/internal/test"
+	testDB "github.com/stellar/go/services/horizon/internal/test/db"
 	"github.com/stellar/go/support/db"
 	"github.com/stellar/go/xdr"
-	"github.com/stellar/go/services/horizon/internal/db2/core"
-	testDB "github.com/stellar/go/services/horizon/internal/test/db"
-	"github.com/stellar/go/services/horizon/internal/test"
-	"github.com/stellar/go/services/horizon/internal/db2/history"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -61,14 +61,33 @@ func TestAssetIngest(t *testing.T) {
 	q := history.Q{Session: s.Ingestion.DB}
 
 	expectedAsset := history.Asset{
-		ID     : 4,
-		Type   : "credit_alphanum4",
-		Code   : "USD",
-		Issuer : "GB2QIYT2IAUFMRXKLSLLPRECC6OCOGJMADSPTRK7TGNT2SFR2YGWDARD",
+		ID:     4,
+		Type:   "credit_alphanum4",
+		Code:   "USD",
+		Issuer: "GB2QIYT2IAUFMRXKLSLLPRECC6OCOGJMADSPTRK7TGNT2SFR2YGWDARD",
 	}
 
 	actualAsset := history.Asset{}
 	err := q.GetAssetByID(&actualAsset, 4)
 	tt.Require.NoError(err)
 	tt.Assert.Equal(expectedAsset, actualAsset)
+}
+
+func TestTradeIngestTimestamp(t *testing.T) {
+	//ingest trade scenario and verify that the trade timestamp
+	//matches the appropriate ledger's timestamp
+	tt := test.Start(t).ScenarioWithoutHorizon("trades")
+	defer tt.Finish()
+	s := ingest(tt)
+	q := history.Q{Session: s.Ingestion.DB}
+
+	var ledgers []history.Ledger
+	err := q.Ledgers().Select(&ledgers)
+	tt.Require.NoError(err)
+
+	var trades []history.Trade
+	err = q.Trades().Select(&trades)
+	tt.Require.NoError(err)
+
+	tt.Require.Equal(trades[len(trades)-1].LedgerCloseTime, ledgers[len(ledgers)-1].ClosedAt)
 }
