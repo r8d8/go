@@ -9,6 +9,7 @@ import (
 	"github.com/stellar/go/services/horizon/internal/httpx"
 	"github.com/stellar/go/services/horizon/internal/render/hal"
 	"golang.org/x/net/context"
+	"github.com/stellar/go/xdr"
 )
 
 // Populate fills out the resource's fields
@@ -42,7 +43,7 @@ func (this *Account) Populate(
 	}
 
 	// populate unauthorized balances
-	this.UnauthorizedBalances = make([]Balance, len(unauthTl)+1)
+	this.UnauthorizedBalances = make([]Balance, len(unauthTl))
 	for i, tl := range unauthTl {
 		err = this.UnauthorizedBalances[i].Populate(ctx, tl)
 		if err != nil {
@@ -101,16 +102,15 @@ func (this *Account) GetData(key string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(this.Data[key])
 }
 
-/// splitTrustlines splits trustlines into authorized/unauthorized arrays
+// splitTrustlines splits trustlines into authorized/unauthorized arrays
 func splitTrustlines(ct []core.Trustline) (authorized, unauthorized []core.Trustline) {
 	authorized = make([]core.Trustline, 0)
 	unauthorized = make([]core.Trustline, 0)
 
 	for _, tl := range ct {
-		switch tl.Flags {
-		case 1:
+		if  tl.Flags == int32(xdr.TrustLineFlagsAuthorizedFlag) {
 			authorized = append(authorized, tl)
-		case 0:
+		} else {
 			unauthorized = append(unauthorized, tl)
 		}
 	}
