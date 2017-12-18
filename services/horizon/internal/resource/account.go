@@ -108,7 +108,7 @@ func splitTrustlines(ct []core.Trustline) (authorized, unauthorized []core.Trust
 	unauthorized = make([]core.Trustline, 0)
 
 	for _, tl := range ct {
-		if  tl.Flags == int32(xdr.TrustLineFlagsAuthorizedFlag) {
+		if tl.Flags & int32(xdr.TrustLineFlagsAuthorizedFlag) != 0 {
 			authorized = append(authorized, tl)
 		} else {
 			unauthorized = append(unauthorized, tl)
