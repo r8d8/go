@@ -49,6 +49,12 @@ func (q *Q) TradesForAssetPair(baseAssetId int64, counterAssetId int64) *TradesQ
 	return trades.forAssetPair(baseAssetId, counterAssetId)
 }
 
+// ForOffer filters the query results by the offer id.
+func (q *TradesQ) ForOffer(id int64) *TradesQ {
+	q.sql = q.sql.Where("htrd.offer_id = ?", id)
+	return q
+}
+
 //Filter by asset pair. This function is private to ensure that correct order and proper select statement are coupled
 func (q *TradesQ) forAssetPair(baseAssetId int64, counterAssetId int64) *TradesQ {
 	q.sql = q.sql.Where(sq.Eq{"base_asset_id": baseAssetId, "counter_asset_id": counterAssetId})
@@ -153,12 +159,12 @@ var selectReverseTrade = sq.Select(
 	"counter_assets.asset_type as base_asset_type",
 	"counter_assets.asset_code as base_asset_code",
 	"counter_assets.asset_issuer as base_asset_issuer",
-	"htrd.base_amount",
+	"htrd.counter_amount as base_amount",
 	"base_accounts.address as counter_account",
 	"base_assets.asset_type as counter_asset_type",
 	"base_assets.asset_code as counter_asset_code",
 	"base_assets.asset_issuer as counter_asset_issuer",
-	"htrd.counter_amount",
+	"htrd.base_amount as counter_amount",
 	"NOT(htrd.base_is_seller) as base_is_seller",
 ).From("history_trades htrd")
 

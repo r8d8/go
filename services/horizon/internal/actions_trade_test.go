@@ -34,7 +34,6 @@ func TestTradeActions_Index(t *testing.T) {
 
 	ht.Assert.WithinDuration(l.ClosedAt, records[0].LedgerCloseTime, 1*time.Second)
 
-	//
 	var q = make(url.Values)
 	q.Add("base_asset_type", "credit_alphanum4")
 	q.Add("base_asset_code", "USD")
@@ -71,6 +70,28 @@ func TestTradeActions_Index(t *testing.T) {
 
 		ht.Assert.Contains(records[0], "base_amount")
 		ht.Assert.Contains(records[0], "counter_amount")
+	}
+
+	// For offer
+	w = ht.Get("/offers/1/trades")
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(1, w.Body)
+	}
+
+	w = ht.Get("/offers/2/trades")
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(0, w.Body)
+	}
+
+	// for an account
+	w = ht.Get("/accounts/GA5WBPYA5Y4WAEHXWR2UKO2UO4BUGHUQ74EUPKON2QHV4WRHOIRNKKH2/trades")
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(1, w.Body)
+	}
+
+	w = ht.Get("/accounts/GCXKG6RN4ONIEPCMNFB732A436Z5PNDSRLGWK7GBLCMQLIFO4S7EYWVU/trades")
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(1, w.Body)
 	}
 }
 
@@ -223,4 +244,41 @@ func TestTradeActions_IndexRegressions(t *testing.T) {
 	w := ht.Get("/trades?" + q.Encode())
 
 	ht.Assert.Equal(404, w.Code) //This used to be 200 with length 0
+}
+
+// TestTradeActions_AggregationOrdering checks that open/close aggregation
+// fields are correct for multiple trades that occur in the same ledger
+// https://github.com/stellar/go/issues/215
+func TestTradeActions_AggregationOrdering(t *testing.T) {
+
+	ht := StartHTTPTest(t, "base")
+	defer ht.Finish()
+
+	seller := GetTestAccount()
+	buyer := GetTestAccount()
+	ass1 := GetTestAsset("usd")
+	ass2 := GetTestAsset("euro")
+
+	dbQ := &Q{ht.HorizonSession()}
+	IngestTestTrade(dbQ, ass1, ass2, seller, buyer, 1, 3, 0, 3)
+	IngestTestTrade(dbQ, ass1, ass2, seller, buyer, 1, 1, 0, 1)
+	IngestTestTrade(dbQ, ass1, ass2, seller, buyer, 1, 2, 0, 2)
+
+	q := make(url.Values)
+	setAssetQuery(&q, "base_", ass1)
+	setAssetQuery(&q, "counter_", ass2)
+
+	q.Add("start_time", "0")
+	q.Add("end_time", "10")
+	q.Add("order", "asc")
+	q.Add("resolution", "10")
+
+	var records []resource.TradeAggregation
+	w := ht.GetWithParams("/trade_aggregations", q)
+	if ht.Assert.Equal(200, w.Code) {
+		ht.Assert.PageOf(1, w.Body)
+		ht.UnmarshalPage(w.Body, &records)
+		ht.Assert.Equal("1.0000000", records[0].Open)
+		ht.Assert.Equal("3.0000000", records[0].Close)
+	}
 }
