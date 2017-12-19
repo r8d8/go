@@ -4,7 +4,7 @@ import (
 	"testing"
 	"github.com/stellar/go/services/horizon/internal/db2/core"
 	"github.com/stellar/go/xdr"
-	"github.com/tj/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSplitTrustlines(t *testing.T) {
