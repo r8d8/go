@@ -1,11 +1,11 @@
 package render
 
 import (
+	"context"
 	"net/http"
 
 	"bitbucket.org/ww/goautoneg"
-	"github.com/stellar/go/services/horizon/internal/log"
-	"golang.org/x/net/context"
+	"github.com/stellar/go/support/log"
 )
 
 // Negotiate inspects the Accept header of the provided request and determines

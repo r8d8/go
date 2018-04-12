@@ -2,6 +2,7 @@ package build
 
 import (
 	"encoding/hex"
+	"fmt"
 
 	"github.com/stellar/go/network"
 	"github.com/stellar/go/support/errors"
@@ -10,11 +11,17 @@ import (
 
 // Transaction groups the creation of a new TransactionBuilder with a call
 // to Mutate.
-func Transaction(muts ...TransactionMutator) (result *TransactionBuilder) {
-	result = &TransactionBuilder{}
-	result.Mutate(muts...)
-	result.Mutate(Defaults{})
-	return
+func Transaction(muts ...TransactionMutator) (*TransactionBuilder, error) {
+	result := &TransactionBuilder{}
+	err := result.Mutate(muts...)
+	if err != nil {
+		return nil, err
+	}
+	err = result.Mutate(Defaults{})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // TransactionMutator is a interface that wraps the
@@ -28,23 +35,23 @@ type TransactionMutator interface {
 type TransactionBuilder struct {
 	TX                *xdr.Transaction
 	NetworkPassphrase string
-	Err               error
 	BaseFee           uint64
 }
 
 // Mutate applies the provided TransactionMutators to this builder's transaction
-func (b *TransactionBuilder) Mutate(muts ...TransactionMutator) {
+func (b *TransactionBuilder) Mutate(muts ...TransactionMutator) error {
 	if b.TX == nil {
 		b.TX = &xdr.Transaction{}
 	}
 
-	for _, m := range muts {
+	for i, m := range muts {
 		err := m.MutateTransaction(b)
 		if err != nil {
-			b.Err = err
-			return
+			return errors.Wrap(err, fmt.Sprintf("mutator:%d failed", i))
 		}
 	}
+
+	return nil
 }
 
 // Hash returns the hash of this builder's transaction.
@@ -65,14 +72,21 @@ func (b *TransactionBuilder) HashHex() (string, error) {
 // Sign returns an new TransactionEnvelopeBuilder using this builder's
 // transaction as the basis and with signatures of that transaction from the
 // provided Signers.
-func (b *TransactionBuilder) Sign(signers ...string) (result TransactionEnvelopeBuilder) {
-	result.Mutate(b)
-
-	for _, s := range signers {
-		result.Mutate(Sign{s})
+func (b *TransactionBuilder) Sign(signers ...string) (TransactionEnvelopeBuilder, error) {
+	var result TransactionEnvelopeBuilder
+	err := result.Mutate(b)
+	if err != nil {
+		return result, err
 	}
 
-	return
+	for _, s := range signers {
+		err := result.Mutate(Sign{s})
+		if err != nil {
+			return result, err
+		}
+	}
+
+	return result, nil
 }
 
 // ------------------------------------------------------------
@@ -117,7 +131,7 @@ func (m AutoSequence) MutateTransaction(o *TransactionBuilder) error {
 
 	seq, err := m.SequenceForAccount(source.Address())
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't load account for auto sequence")
 	}
 
 	o.TX.SeqNum = seq + 1
@@ -241,6 +255,11 @@ func (m MemoText) MutateTransaction(o *TransactionBuilder) (err error) {
 
 	o.TX.Memo, err = xdr.NewMemo(xdr.MemoTypeMemoText, m.Value)
 	return
+}
+
+func (m Timebounds) MutateTransaction(o *TransactionBuilder) error {
+    o.TX.TimeBounds = &xdr.TimeBounds{MinTime: xdr.Uint64(m.MinTime), MaxTime: xdr.Uint64(m.MaxTime)}
+    return nil
 }
 
 // MutateTransaction for Network sets the Network ID to use when signing this transaction

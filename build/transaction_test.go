@@ -11,10 +11,11 @@ var _ = Describe("Transaction Mutators:", func() {
 	var (
 		subject *TransactionBuilder
 		mut     TransactionMutator
+		err     error
 	)
 
 	BeforeEach(func() { subject = &TransactionBuilder{} })
-	JustBeforeEach(func() { subject.Mutate(mut) })
+	JustBeforeEach(func() { err = subject.Mutate(mut) })
 
 	Describe("Defaults", func() {
 		BeforeEach(func() {
@@ -105,10 +106,19 @@ var _ = Describe("Transaction Mutators:", func() {
 		Context("a string longer than 28 bytes", func() {
 			BeforeEach(func() { mut = MemoText{"12345678901234567890123456789"} })
 			It("sets an error", func() {
-				Expect(subject.Err).ToNot(BeNil())
+				Expect(err).ToNot(BeNil())
 			})
 		})
 	})
+
+    Describe("Timebounds", func() {
+        BeforeEach(func() { mut = Timebounds{1521056118, 1521056298} })
+        It("succeeds", func() { Expect(err).NotTo(HaveOccurred()) })
+        It("sets an minimum and maximum timebound on the transaction", func() {
+            Expect(subject.TX.TimeBounds.MinTime).To(Equal(xdr.Uint64(1521056118)))
+            Expect(subject.TX.TimeBounds.MaxTime).To(Equal(xdr.Uint64(1521056298)))
+        })
+    })
 
 	Describe("AllowTrustBuilder", func() {
 		BeforeEach(func() { mut = AllowTrust() })
@@ -137,13 +147,13 @@ var _ = Describe("Transaction Mutators:", func() {
 
 		Context("with bad address", func() {
 			BeforeEach(func() { mut = SourceAccount{"foo"} })
-			It("fails", func() { Expect(subject.Err).To(HaveOccurred()) })
+			It("fails", func() { Expect(err).To(HaveOccurred()) })
 		})
 	})
 
 	Describe("Sequence", func() {
 		BeforeEach(func() { mut = Sequence{12345} })
-		It("succeeds", func() { Expect(subject.Err).NotTo(HaveOccurred()) })
+		It("succeeds", func() { Expect(err).NotTo(HaveOccurred()) })
 		It("sets the sequence", func() { Expect(subject.TX.SeqNum).To(BeEquivalentTo(12345)) })
 	})
 
@@ -159,7 +169,7 @@ var _ = Describe("Transaction Mutators:", func() {
 		})
 
 		Context("with no source account set", func() {
-			It("fails", func() { Expect(subject.Err).To(HaveOccurred()) })
+			It("fails", func() { Expect(err).To(HaveOccurred()) })
 		})
 
 		Context("with a source account set", func() {
@@ -169,7 +179,7 @@ var _ = Describe("Transaction Mutators:", func() {
 				})
 			})
 
-			It("succeeds", func() { Expect(subject.Err).NotTo(HaveOccurred()) })
+			It("succeeds", func() { Expect(err).NotTo(HaveOccurred()) })
 			It("sets the sequence", func() { Expect(subject.TX.SeqNum).To(BeEquivalentTo(3)) })
 		})
 	})

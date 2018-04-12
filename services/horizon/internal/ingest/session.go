@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/stellar/go/clients/stellarcore"
@@ -35,6 +36,7 @@ func (is *Session) Run() {
 	defer is.Ingestion.Rollback()
 
 	for is.Cursor.NextLedger() {
+		is.validateLedger()
 		is.clearLedger()
 		is.ingestLedger()
 		is.flush()
@@ -200,6 +202,14 @@ func (is *Session) ingestEffects() {
 			effects.Add(source, history.EffectAccountFlagsUpdated, flagDetails)
 		}
 
+		if op.InflationDest != nil {
+			effects.Add(source, history.EffectAccountInflationDestinationUpdated,
+				map[string]interface{}{
+					"inflation_destination": op.InflationDest.Address(),
+				},
+			)
+		}
+
 		is.ingestSignerEffects(effects, op)
 
 	case xdr.OperationTypeChangeTrust:
@@ -319,16 +329,12 @@ func (is *Session) ingestLedger() {
 	}
 
 	start := time.Now()
-	is.Err = is.Ingestion.Ledger(
+	is.Ingestion.Ledger(
 		is.Cursor.LedgerID(),
 		is.Cursor.Ledger(),
 		is.Cursor.SuccessfulTransactionCount(),
 		is.Cursor.SuccessfulLedgerOperationCount(),
 	)
-
-	if is.Err != nil {
-		return
-	}
 
 	for is.Cursor.NextTx() {
 		is.ingestTransaction()
@@ -385,10 +391,7 @@ func (is *Session) ingestOperationParticipants() {
 		return
 	}
 
-	is.Err = is.Ingestion.OperationParticipants(is.Cursor.OperationID(), p)
-	if is.Err != nil {
-		return
-	}
+	is.Ingestion.OperationParticipants(is.Cursor.OperationID(), p)
 }
 
 func (is *Session) ingestSignerEffects(effects *EffectIngestion, op xdr.SetOptionsOp) {
@@ -403,6 +406,7 @@ func (is *Session) ingestSignerEffects(effects *EffectIngestion, op xdr.SetOptio
 	// HACK (scott) 2017-11-27:  Prevent crashes when BeforeAndAfter fails to
 	// correctly work.
 	if be == nil || ae == nil {
+		// TODO (scott) 2018-03-02: log some info to help us track down the crash, doofus
 		return
 	}
 
@@ -411,6 +415,11 @@ func (is *Session) ingestSignerEffects(effects *EffectIngestion, op xdr.SetOptio
 
 	before := beforeAccount.SignerSummary()
 	after := afterAccount.SignerSummary()
+
+	// if before and after are the same, the signers have not changed
+	if reflect.DeepEqual(before, after) {
+		return
+	}
 
 	for addy := range before {
 		weight, ok := after[addy]
@@ -482,11 +491,22 @@ func (is *Session) ingestTrades() {
 			continue
 		}
 
+		//extract original offer price
+		key := xdr.LedgerKey{}
+		key.SetOffer(trade.SellerId, uint64(trade.OfferId))
+		before, _, err := is.Cursor.BeforeAndAfter(key)
+		if err != nil {
+			is.Err = err
+			return
+		}
+		offerPrice := before.Data.Offer.Price
+
 		is.Err = q.InsertTrade(
 			is.Cursor.OperationID(),
 			int32(i),
 			buyer,
 			trade,
+			offerPrice,
 			sTime.MillisFromSeconds(is.Cursor.Ledger().CloseTime),
 		)
 		if is.Err != nil {
@@ -539,14 +559,11 @@ func (is *Session) ingestTransaction() {
 	if !is.Cursor.Transaction().IsSuccessful() {
 		return
 	}
-	is.Err = is.Ingestion.Transaction(
+	is.Ingestion.Transaction(
 		is.Cursor.TransactionID(),
 		is.Cursor.Transaction(),
 		is.Cursor.TransactionFee(),
 	)
-	if is.Err != nil {
-		return
-	}
 
 	for is.Cursor.NextOp() {
 		is.ingestOperation()
@@ -571,11 +588,7 @@ func (is *Session) ingestTransactionParticipants() {
 		return
 	}
 
-	is.Err = is.Ingestion.TransactionParticipants(is.Cursor.TransactionID(), p)
-	if is.Err != nil {
-		return
-	}
-
+	is.Ingestion.TransactionParticipants(is.Cursor.TransactionID(), p)
 }
 
 // assetDetails sets the details for `a` on `result` using keys with `prefix`
@@ -780,4 +793,21 @@ func (is *Session) reportCursorState() error {
 	}
 
 	return nil
+}
+
+// validate ledger
+func (is *Session) validateLedger() {
+	if is.Err != nil {
+		return
+	}
+
+	// TODO: if the cursor is running forward, load the previous legder and
+	// validate.  if reverse, load the next ledger and validate.
+
+	// if we can find no ledger where one should be, emit a warning because we
+	// cannot validate.  The normal scenario for this to occur is an empty history
+	// databse.
+
+	// if hashes mistmatch, return an error
+
 }

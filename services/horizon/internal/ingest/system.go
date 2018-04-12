@@ -8,8 +8,26 @@ import (
 	"github.com/stellar/go/services/horizon/internal/log"
 	"github.com/stellar/go/services/horizon/internal/toid"
 	"github.com/stellar/go/support/errors"
-	err2 "github.com/stellar/go/support/errors"
 )
+
+// Backfill ingests history in reverse chronological order, from the current
+// horizon elder query for `n` ledgers
+func (i *System) Backfill(n uint) error {
+	start := ledger.CurrentState().HistoryElder
+	end := start - int32(n)
+	is := NewSession(i)
+	is.Cursor = NewCursor(start, end, i)
+	is.ClearExisting = true
+
+	is.Run()
+	log.WithField("start", start).
+		WithField("end", end).
+		WithField("err", is.Err).
+		WithField("ingested", is.Ingested).
+		Info("ingest: backfill complete")
+
+	return is.Err
+}
 
 // ClearAll removes all previously ingested historical data from the horizon
 // database.
@@ -38,18 +56,32 @@ func (i *System) ClearAll() error {
 	return nil
 }
 
-// RebaseHistory re-establishes horizon's history database using the provided
-// sequence as a starting point.
-func (i *System) RebaseHistory(sequence int32) error {
+// RebaseHistory re-establishes horizon's history database by clearing it, ingesting the latest ledger in stellar-core then backfilling as many ledgers as possible
+func (i *System) RebaseHistory() error {
+	var latest int32
+	var elder int32
 
-	err := i.ClearAll()
+	q := core.Q{Session: i.CoreDB}
+	err := q.LatestLedger(&latest)
+	if err != nil {
+		return errors.Wrap(err, "load core latest ledger failed")
+	}
+
+	err = q.ElderLedger(&elder)
+	if err != nil {
+		return errors.Wrap(err, "load core elder ledger failed")
+	}
+
+	err = i.ClearAll()
 	if err != nil {
 		return errors.Wrap(err, "failed to  clear db")
 	}
 
-	err = i.ReingestSingle(sequence)
+	log.Infof("rebasing history using ledgers %d-%d", elder, latest)
+
+	_, err = i.ReingestRange(latest, elder)
 	if err != nil {
-		return errors.Wrap(err, "failed to reingest new base")
+		return errors.Wrap(err, "failed to ingest latest ledger segment")
 	}
 
 	return nil
@@ -58,42 +90,32 @@ func (i *System) RebaseHistory(sequence int32) error {
 // ReingestAll re-ingests all ledgers
 func (i *System) ReingestAll() (int, error) {
 
-	err := i.trimAbandondedLedgers()
+	var elder int32
+	var latest int32
+	q := history.Q{Session: i.HorizonDB}
+
+	err := q.ElderLedger(&elder)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "load history elder ledger failed")
 	}
 
-	var coreElder int32
-	var coreLatest int32
-	cq := core.Q{Session: i.CoreDB}
-
-	err = cq.ElderLedger(&coreElder)
+	err = q.LatestLedger(&latest)
 	if err != nil {
-		return 0, errors.Wrap(err, "load core elder ledger failed")
-	}
-
-	err = cq.LatestLedger(&coreLatest)
-	if err != nil {
-		return 0, errors.Wrap(err, "load core elder ledger failed")
+		return 0, errors.Wrap(err, "load history latest ledger failed")
 	}
 
 	log.
-		WithField("start", coreElder).
-		WithField("end", coreLatest).
+		WithField("start", latest).
+		WithField("end", elder).
 		Info("reingest: all")
 
-	return i.ReingestRange(coreElder, coreLatest)
+	return i.ReingestRange(latest, elder)
 }
 
 // ReingestOutdated finds old ledgers and reimports them.
 func (i *System) ReingestOutdated() (n int, err error) {
 
 	q := history.Q{Session: i.HorizonDB}
-
-	err = i.trimAbandondedLedgers()
-	if err != nil {
-		return
-	}
 
 	// NOTE: this loop will never terminate if some bug were cause a ledger
 	// reingestion to silently fail.
@@ -193,48 +215,6 @@ func (i *System) Tick() *Session {
 	return is
 }
 
-// newCursor creates a new ingestion cursor that reflects the
-// current cached ledger state.
-func (i *System) newCursor() (*Cursor, error) {
-	ls := ledger.CurrentState()
-
-	// If we already have ingested data, start from the next ingestable ledger,
-	// end with the newest closed ledger.
-	if ls.HistoryLatest != 0 {
-		return NewCursor(ls.HistoryLatest+1, ls.CoreLatest, i), nil
-	}
-
-	// Since we've found out the history db is empty (i.e. ls.HistoryLatest == 0),
-	// we now find what the earliest ledger we can import is.
-
-	// If horizon is configured to only retain a certain number of ledgers, use
-	// that retention number to guess at the new start point.
-	if i.HistoryRetentionCount > 0 {
-		var start int32
-		err := i.CoreDB.GetRaw(&start, `
-			SELECT ledgerseq FROM ledgerheaders WHERE ledgerseq > ?
-		`, ls.CoreLatest-int32(i.HistoryRetentionCount))
-
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to find session start")
-		}
-
-		return NewCursor(start, ls.CoreLatest, i), nil
-	}
-
-	// HACK (scott): we just start with ledger 1 because we can't performantly
-	// detect the contiguous range of history that stellar-core has available when
-	// the database is large. Until the ingestion system has support for
-	// backfilling history, it is advised that you manually establish your
-	// ingestion point by using the `horizon db reingest` command with a single
-	// specified ledger number to start from.  If a horizon database is empty and
-	// the connected stellar-core is not configured for CATCHUP_COMPLETE, trying
-	// to import from ledger 1 will cause an ingestion deadlock when the system
-	// hits the first gap.
-	//
-	return NewCursor(1, ls.CoreLatest, i), nil
-}
-
 // run causes the importer to check stellar-core to see if we can import new
 // data.
 func (i *System) runOnce() {
@@ -242,15 +222,14 @@ func (i *System) runOnce() {
 		if rec := recover(); rec != nil {
 			err := herr.FromPanic(rec)
 			log.Errorf("import session panicked: %s", err)
-			errors.ReportToSentry(err, nil)
+			herr.ReportToSentry(err, nil)
 		}
 	}()
 
 	ls := ledger.CurrentState()
 
 	// 1. stash a copy of the current ingestion session (assigned from the tick)
-	// 2. output "initial ingestion" message if the db is empty, otherwise
-	//    validate the ledger chain.
+	// 2. decide what to import
 	// 3. import until none available
 
 	// 1.
@@ -269,33 +248,25 @@ func (i *System) runOnce() {
 		return
 	}
 
-	cursor, err := i.newCursor()
-	if err != nil {
-		log.Errorf("failed to create ingestion cursor: %s", err)
+	if ls.CoreLatest == 1 {
+		log.Warn("ingest: waiting for stellar-core sync")
 		return
 	}
-	is.Cursor = cursor
 
-	if is.Cursor.FirstLedger > is.Cursor.LastLedger {
-		// NOTE: this occurs when horizon is synced with the connected stellar-core
+	if ls.HistoryLatest == ls.CoreLatest {
+		log.Debug("ingest: no new ledgers")
 		return
 	}
 
 	// 2.
 	if ls.HistoryLatest == 0 {
 		log.Infof(
-			"history db is empty, starting ingestion from ledger %d",
-			is.Cursor.FirstLedger,
+			"history db is empty, establishing base at ledger %d",
+			ls.CoreLatest,
 		)
+		is.Cursor = NewCursor(ls.CoreLatest, ls.CoreLatest, i)
 	} else {
-
-		err := i.validateLedgerChain(is.Cursor.FirstLedger)
-		if err != nil {
-			log.
-				WithField("start", is.Cursor.FirstLedger).
-				Errorf("ledger gap detected (possible db corruption): %s", err)
-			return
-		}
+		is.Cursor = NewCursor(ls.HistoryLatest+1, ls.CoreLatest, i)
 	}
 
 	// 3.
@@ -354,23 +325,24 @@ func (i *System) trimAbandondedLedgers() error {
 func (i *System) validateLedgerChain(seq int32) error {
 	var (
 		cur  core.LedgerHeader
-		prev core.LedgerHeader
+		prev history.Ledger
 	)
 
-	q := &core.Q{Session: i.CoreDB}
+	cq := &core.Q{Session: i.CoreDB}
+	hq := &history.Q{Session: i.HorizonDB}
 
-	err := q.LedgerHeaderBySequence(&cur, seq)
+	err := cq.LedgerHeaderBySequence(&cur, seq)
 	if err != nil {
-		return err2.Wrap(err, "validateLedgerChain: failed to load cur ledger")
+		return errors.Wrap(err, "validateLedgerChain: failed to load cur ledger")
 	}
 
-	err = q.LedgerHeaderBySequence(&prev, seq-1)
+	err = hq.LedgerBySequence(&prev, seq-1)
 	if err != nil {
-		return err2.Wrap(err, "validateLedgerChain: failed to load prev ledger")
+		return errors.Wrap(err, "validateLedgerChain: failed to load prev ledger")
 	}
 
 	if cur.PrevHash != prev.LedgerHash {
-		return err2.New("cur and prev ledger hashes don't match")
+		return errors.New("cur and prev ledger hashes don't match")
 	}
 
 	return nil

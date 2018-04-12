@@ -3,6 +3,7 @@
 package resource
 
 import (
+	"context"
 	"time"
 
 	"github.com/stellar/go/services/horizon/internal/db2/history"
@@ -12,7 +13,7 @@ import (
 	"github.com/stellar/go/services/horizon/internal/resource/operations"
 	"github.com/stellar/go/strkey"
 	"github.com/stellar/go/support/errors"
-	"golang.org/x/net/context"
+	"github.com/stellar/go/xdr"
 )
 
 // KeyTypeNames maps from strkey version bytes into json string values to use in
@@ -114,10 +115,11 @@ type Ledger struct {
 	ClosedAt         time.Time `json:"closed_at"`
 	TotalCoins       string    `json:"total_coins"`
 	FeePool          string    `json:"fee_pool"`
-	BaseFee          int32     `json:"base_fee"`
-	BaseReserve      string    `json:"base_reserve"`
+	BaseFee          int32     `json:"base_fee_in_stroops"`
+	BaseReserve      int32     `json:"base_reserve_in_stroops"`
 	MaxTxSetSize     int32     `json:"max_tx_set_size"`
 	ProtocolVersion  int32     `json:"protocol_version"`
+	HeaderXDR        string    `json:"header_xdr"`
 }
 
 // Offer is the display form of an offer to trade currency.
@@ -223,6 +225,7 @@ type Trade struct {
 	CounterAssetCode   string    `json:"counter_asset_code,omitempty"`
 	CounterAssetIssuer string    `json:"counter_asset_issuer,omitempty"`
 	BaseIsSeller       bool      `json:"base_is_seller"`
+	Price              *Price    `json:"price"`
 }
 
 // TradeEffect represents a trade effect resource.  NOTE (scott, 2017-12-08):
@@ -253,17 +256,21 @@ type TradeEffect struct {
 	LedgerCloseTime   time.Time `json:"created_at"`
 }
 
-// Transaction represents trade data aggregation over a period of time
+// TradeAggregation represents trade data aggregation over a period of time
 type TradeAggregation struct {
-	Timestamp     int64  `json:"timestamp"`
-	TradeCount    int64  `json:"trade_count"`
-	BaseVolume    string `json:"base_volume"`
-	CounterVolume string `json:"counter_volume"`
-	Average       string `json:"avg"`
-	High          string `json:"high"`
-	Low           string `json:"low"`
-	Open          string `json:"open"`
-	Close         string `json:"close"`
+	Timestamp     int64     `json:"timestamp"`
+	TradeCount    int64     `json:"trade_count"`
+	BaseVolume    string    `json:"base_volume"`
+	CounterVolume string    `json:"counter_volume"`
+	Average       string    `json:"avg"`
+	High          string    `json:"high"`
+	HighR         xdr.Price `json:"high_r"`
+	Low           string    `json:"low"`
+	LowR          xdr.Price `json:"low_r"`
+	Open          string    `json:"open"`
+	OpenR         xdr.Price `json:"open_r"`
+	Close         string    `json:"close"`
+	CloseR        xdr.Price `json:"close_r"`
 }
 
 // Transaction represents a single, successful transaction
@@ -322,8 +329,9 @@ type TransactionSuccess struct {
 func NewEffect(
 	ctx context.Context,
 	row history.Effect,
+	ledger history.Ledger,
 ) (result hal.Pageable, err error) {
-	return effects.New(ctx, row)
+	return effects.New(ctx, row, ledger)
 }
 
 // NewOperation returns a resource of the appropriate sub-type for the provided

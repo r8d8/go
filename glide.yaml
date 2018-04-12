@@ -18,7 +18,7 @@ import:
   version: c9d3cc542ad199f62c0264286be537f9bce6063c
   repo: https://github.com/getsentry/raven-go
 - package: github.com/segmentio/go-loggly
-  version: e78f6971ebca5835614673e2f5f6a47ca5f13501
+  version: eb91657e62b25699dd4e84d5562735440d4beace
   repo: https://github.com/segmentio/go-loggly
 - package: golang.org/x/net
   version: 9bc2a3340c92c17a20edcd0080e93851ed58f5d5
@@ -236,18 +236,12 @@ import:
 - package: github.com/stretchr/objx
   version: 1a9d0bb9f541897e62256577b352fdbc1fb4fd94
   repo: https://github.com/stretchr/objx
-- package: github.com/tylerb/graceful
-  version: 7116c7a8115899e80197cd9e0b97998c0f97ed8e
-  repo: https://github.com/tylerb/graceful
 - package: github.com/valyala/bytebufferpool
   version: e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7
   repo: https://github.com/valyala/bytebufferpool
 - package: github.com/valyala/fasthttp
   version: 0a7f0a797cd66b89588d0a7fdd670b706579a621
   repo: https://github.com/valyala/fasthttp
-- package: github.com/visionmedia/go-debug
-  version: ff4a55a20a86994118644bbddc6a216da193cc13
-  repo: https://github.com/visionmedia/go-debug
 - package: github.com/xeipuuv/gojsonpointer
   version: e0fe6f68307607d540ed8eac07a342c33fa1b54a
   repo: https://github.com/xeipuuv/gojsonpointer
@@ -298,3 +292,5 @@ import:
   subpackages:
   - socks
 - package: github.com/btcsuite/websocket
+- package: github.com/bartekn/go-bip39
+  version: a05967ea095d81c8fe4833776774cfaff8e5036c

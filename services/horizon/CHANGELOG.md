@@ -6,11 +6,81 @@ file.  This project adheres to [Semantic Versioning](http://semver.org/).
 As this project is pre 1.0, breaking changes may happen for minor version
 bumps.  A breaking change will get clearly notified in this log.
 
-## [Unreleased]
+## Unreleases
 
 ### Added
 
-- Operation and payment resources were changed to add a `transaction_hash` property.
+- Streaming connections now emit a heartbeat message once per five seconds to keep client connections alive.  The heartbeat takes the form of an SSE comment.
+
+### Changes
+
+- BREAKING CHANGE: Streaming connections will no longer wait until the first SSE message before sending the SSE preamble and establishing the streaming connection.
+- BREAKING CHANGE: SSE requests will no longer respond with regular HTTP error (i.e. a non-200 status) if the error occurred prior to sending the first SSE message.
+
+## v0.12.3 - 2017-03-20
+
+### Bug fixes
+
+- Fix a service stutter caused by excessive `info` commands being issued from the root endpoint.
+
+
+## v0.12.2 - 2017-03-14
+
+This release is a bug fix release for v0.12.1 and v0.12.2.  *Please see the upgrade notes below if you did not already migrate your db for v0.12.0*
+
+### Changes
+
+- Remove strict validation on the `resolution` parameter for trade aggregations endpoint.  We will add this feature back in to the next major release. 
+
+
+## v0.12.1 - 2017-03-13
+
+This release is a bug fix release for v0.12.0.  *Please see the upgrade notes below if you did not already migrate your db for v0.12.0*
+
+### Bug fixes
+
+- Fixed an issue caused by un-migrated trade rows. (https://github.com/stellar/go/issues/357)
+- Command line flags are now useable for subcommands of horizon.
+
+
+## v0.12.0 - 2017-03-08
+
+Big release this time for horizon:  We've made a number of breaking changes since v0.11.0 and have revised both our database schema as well as our data ingestion system.  We recommend that you take a backup of your horizon database prior to upgrading, just in case.  
+
+### Upgrade Notes
+
+Since this release changes both the schema and the data ingestion system, we recommend the following upgrade path to minimize downtime:
+
+1. Upgrade horizon binaries, but do not restart the service
+2. Run `horizon db migrate up` to migrate the db schema
+3. Run `horizon db reingest` in a background session to begin the data reingestion process
+4. Restart horizon
+
+### Added
+
+- Operation and payment resources were changed to add `transaction_hash` and `created_at` properties.
+- The ledger resource was changed to add a `header_xdr` property.  Existing horizon installations should re-ingest all ledgers to populate the history database tables with the data.  In future versions of horizon we will disallow null values in this column.  Going forward, this change reduces the coupling of horizon to stellar-core, ensuring that horizon can re-import history even when the data is no longer stored within stellar-core's database.
+- All Assets endpoint (`/assets`) that returns a list of all the assets in the system along with some stats per asset. The filters allow you to narrow down to any specific asset of interest.
+- Trade Aggregations endpoint (`/trade_aggregations`) allow for efficient gathering of historical trade data. This is done by dividing a given time range into segments and aggregate statistics, for a given asset pair (`base`, `counter`) over each of these segments.
+
+### Bug fixes
+
+- Ingestion performance and stability has been improved. 
+- Changes to an account's inflation destination no longer produce erroneous "signer_updated" effects. (https://github.com/stellar/horizon/issues/390)
+
+
+### Changed
+
+- BREAKING CHANGE: The `base_fee` property of the ledger resource has been renamed to `base_fee_in_stroops` 
+- BREAKING CHANGE: The `base_reserve` property of the ledger resource has been renamed to `base_reserve_in_stroops` and is now expressed in stroops (rather than lumens) and as a JSON number. 
+- BREAKING CHANGE: The "Orderbook Trades" (`/orderbook/trades`) endpoint has been removed and replaced by the "All Trades" (`/trades`) endpoint.
+- BREAKING CHANGE: The Trade resource has been modified to generalize assets as (`base`, `counter`) pairs, rather than the previous (`sold`,`bought`) pairs.  
+- Full reingestion (i.e. running `horizon db reingest`) now runs in reverse chronological order.  
+
+### Removed
+
+- BREAKING CHANGE: Friendbot has been extracted to an external microservice.
+
 
 ## [v0.11.0] - 2017-08-15
 
@@ -190,7 +260,6 @@ This release contains the initial implementation of the "Abridged History System
 ### Added
 - Github releases are created from tagged travis builds automatically
 
-[Unreleased]: https://github.com/stellar/horizon/compare/v0.11.0...master
 [v0.11.0]: https://github.com/stellar/horizon/compare/v0.10.1...v0.11.0
 [v0.10.1]: https://github.com/stellar/horizon/compare/v0.10.0...v0.10.1
 [v0.10.0]: https://github.com/stellar/horizon/compare/v0.9.1...v0.10.0

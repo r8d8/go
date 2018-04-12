@@ -7,6 +7,7 @@ import (
 )
 
 // Payment groups the creation of a new PaymentBuilder with a call to Mutate.
+// Requires the Destination and NativeAmount mutators to be set.
 func Payment(muts ...interface{}) (result PaymentBuilder) {
 	result.Mutate(muts...)
 	return
@@ -53,7 +54,7 @@ func (b *PaymentBuilder) Mutate(muts ...interface{}) {
 		}
 
 		if err != nil {
-			b.Err = err
+			b.Err = errors.Wrap(err, "PaymentBuilder error")
 			return
 		}
 	}

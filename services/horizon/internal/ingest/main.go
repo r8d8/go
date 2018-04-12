@@ -22,7 +22,24 @@ const (
 	// Scripts, that have yet to be ported to this codebase can then be leveraged
 	// to re-ingest old data with the new algorithm, providing a seamless
 	// transition when the ingested data's structure changes.
-	CurrentVersion = 11
+	CurrentVersion = 13
+)
+
+// Address is a type of a param provided to BatchInsertBuilder that gets exchanged
+// to record ID in a DB.
+type Address string
+
+type TableName string
+
+const (
+	AssetStatsTableName              TableName = "asset_stats"
+	EffectsTableName                 TableName = "history_effects"
+	LedgersTableName                 TableName = "history_ledgers"
+	OperationParticipantsTableName   TableName = "history_operation_participants"
+	OperationsTableName              TableName = "history_operations"
+	TradesTableName                  TableName = "history_trades"
+	TransactionParticipantsTableName TableName = "history_transaction_participants"
+	TransactionsTableName            TableName = "history_transactions"
 )
 
 // Cursor iterates through a stellar core database's ledgers
@@ -33,8 +50,9 @@ type Cursor struct {
 	// LastLedger is the end of the range of ledgers (inclusive) that will
 	// attempt to be ingested in this session.
 	LastLedger int32
-	// DB is the stellar-core db that data is ingested from.
-	DB *db.Session
+
+	// CoreDB is the stellar-core db that data is ingested from.
+	CoreDB *db.Session
 
 	Metrics        *IngesterMetrics
 	AssetsModified AssetsModified
@@ -107,6 +125,17 @@ type IngesterMetrics struct {
 	LoadLedgerTimer   metrics.Timer
 }
 
+// BatchInsertBuilder works like sq.InsertBuilder but has a better support for batching
+// large number of rows.
+type BatchInsertBuilder struct {
+	TableName TableName
+	Columns   []string
+
+	initOnce      sync.Once
+	rows          [][]interface{}
+	insertBuilder sq.InsertBuilder
+}
+
 // AssetsModified tracks all the assets modified during a cycle of ingestion
 type AssetsModified map[string]xdr.Asset
 
@@ -114,17 +143,8 @@ type AssetsModified map[string]xdr.Asset
 type Ingestion struct {
 	// DB is the sql connection to be used for writing any rows into the horizon
 	// database.
-	DB *db.Session
-
-	ledgers                  sq.InsertBuilder
-	transactions             sq.InsertBuilder
-	transaction_participants sq.InsertBuilder
-	operations               sq.InsertBuilder
-	operation_participants   sq.InsertBuilder
-	effects                  sq.InsertBuilder
-	accounts                 sq.InsertBuilder
-	trades                   sq.InsertBuilder
-	assetStats               sq.InsertBuilder
+	DB       *db.Session
+	builders map[TableName]*BatchInsertBuilder
 }
 
 // Session represents a single attempt at ingesting data into the history
@@ -184,7 +204,7 @@ func NewCursor(first, last int32, i *System) *Cursor {
 	return &Cursor{
 		FirstLedger:    first,
 		LastLedger:     last,
-		DB:             i.CoreDB,
+		CoreDB:         i.CoreDB,
 		Metrics:        &i.Metrics,
 		AssetsModified: AssetsModified(make(map[string]xdr.Asset)),
 	}

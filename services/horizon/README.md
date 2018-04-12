@@ -11,9 +11,9 @@ See [the old releases page](https://github.com/stellar/horizon/releases) for pri
 
 | Platform       | Binary file name                                                                         |
 |----------------|------------------------------------------------------------------------------------------|
-| Mac OSX 64 bit | [horizon-darwin-amd64](https://github.com/stellar/go/releases/download/v0.11.0/horizon-v0.11.0-darwin-amd64.tar.gz)      |
-| Linux 64 bit   | [horizon-linux-amd64](https://github.com/stellar/go/releases/download/v0.11.0/horizon-v0.11.0-linux-amd64.tar.gz)       |
-| Windows 64 bit | [horizon-windows-amd64.exe](https://github.com/stellar/go/releases/download/v0.11.0/horizon-v0.11.0-windows-amd64.zip) |
+| Mac OSX 64 bit | [horizon-darwin-amd64](https://github.com/stellar/go/releases/download/horizon-v0.12.0-testing/horizon-v0.12.0-testing-darwin-amd64.tar.gz)      |
+| Linux 64 bit   | [horizon-linux-amd64](https://github.com/stellar/go/releases/download/horizon-v0.12.0-testing/horizon-v0.12.0-testing-linux-amd64.tar.gz)       |
+| Windows 64 bit | [horizon-windows-amd64.exe](https://github.com/stellar/go/releases/download/horizon-v0.12.0-testing/horizon-v0.12.0-testing-windows-amd64.zip) |
 
 Alternatively, you can [build](#building) the binary yourself.
 
@@ -22,6 +22,8 @@ Alternatively, you can [build](#building) the binary yourself.
 Horizon requires go 1.6 or higher to build. See (https://golang.org/doc/install) for installation instructions.
 
 ## Building
+
+[mercurial](https://www.mercurial-scm.org/) is used during glide build.
 
 [glide](https://glide.sh/) is used for building horizon.
 

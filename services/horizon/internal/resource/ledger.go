@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/stellar/go/amount"
@@ -8,7 +9,6 @@ import (
 	"github.com/stellar/go/services/horizon/internal/httpx"
 	"github.com/stellar/go/services/horizon/internal/render/hal"
 	"github.com/stellar/go/xdr"
-	"golang.org/x/net/context"
 )
 
 func (this *Ledger) Populate(ctx context.Context, row history.Ledger) {
@@ -23,9 +23,15 @@ func (this *Ledger) Populate(ctx context.Context, row history.Ledger) {
 	this.TotalCoins = amount.String(xdr.Int64(row.TotalCoins))
 	this.FeePool = amount.String(xdr.Int64(row.FeePool))
 	this.BaseFee = row.BaseFee
-	this.BaseReserve = amount.String(xdr.Int64(row.BaseReserve))
+	this.BaseReserve = row.BaseReserve
 	this.MaxTxSetSize = row.MaxTxSetSize
 	this.ProtocolVersion = row.ProtocolVersion
+
+	if row.LedgerHeaderXDR.Valid {
+		this.HeaderXDR = row.LedgerHeaderXDR.String
+	} else {
+		this.HeaderXDR = ""
+	}
 
 	self := fmt.Sprintf("/ledgers/%d", row.Sequence)
 	lb := hal.LinkBuilder{httpx.BaseURL(ctx)}

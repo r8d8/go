@@ -18,6 +18,8 @@ It solves many problems connected to moving tokens to Stellar network:
 
 We are releasing the **alpha version** of this software. We encourage our community of developers to test and improve it.
 
+Before running `bifrost`, execute `database/migrations/01_init.sql` SQL queries in your DB. Future Bifrost version will do it automatically.
+
 Download the binary from [the release page](https://github.com/stellar/go/releases/tag/bifrost-v0.0.1) and use it with it's [Bifrost JS SDK](https://github.com/stellar/bifrost-js-sdk).
 
 ## How it works
@@ -25,7 +27,7 @@ Download the binary from [the release page](https://github.com/stellar/go/releas
 1. User opens the web app implemented using [Bifrost JS SDK](https://github.com/stellar/bifrost-js-sdk).
 1. User is presented with her public and private Stellar keys where Bitcoin/Ethereum will be sent.
 1. User selects what cryptocurrency she wants to move to Stellar network.
-1. A receiving Bitcoin/Etherem address is generated.
+1. A receiving Bitcoin/Ethereum address is generated.
 1. User sends funds in Bitcoin/Ethereum network.
 1. Bifrost listens to Bitcoin and Ethereum network events. When payment arrives it creates a Stellar [account](https://www.stellar.org/developers/guides/concepts/accounts.html) for the user.
 1. User creates a [trust line](https://www.stellar.org/developers/guides/concepts/assets.html) to BTC/ETH issued by Bifrost account.
@@ -41,8 +43,8 @@ https://bifrost.stellar.org/
 1. First you need some ETH on Ethereum testnet.
 1. Create an account at https://www.myetherwallet.com/, then switch Network (top-right dropdown) to "Ropsten (MyEtherWallet)". Write down/copy your Ethereum address somewhere.
 1. Use http://faucet.ropsten.be:3001/ to send 3 ETH to your testnet account.
-1. Now open Bifrost demo: https://bifrost.stellar.org/ It will display address where to send your test ETH.
-1. Go back to MyEtherWallet and send ETH to the address displayed by Bifrost. Sometimes Ropsten network is overloaded so monitor the Etherscan to check if your tx was included in a block. If not, increated gas price (this can be done in "Send Offline" tab).
+1. Now open Bifrost demo: https://bifrost.stellar.org/ It will display an Ethereum address for sending your test ETH.
+1. Go back to MyEtherWallet and from your testnet account send ETH to the address displayed by Bifrost. Sometimes Ropsten network is overloaded so monitor the Etherscan to check if your tx was included in a block. If not, increase the gas price (this can be done in "Send Offline" tab).
 1. Switch back to Bifrost demo and check the progress.
 
 ## Config
@@ -62,10 +64,12 @@ https://bifrost.stellar.org/
   * `network_id` - network ID (`3` - Ropsten testnet, `1` - live Ethereum network)
   * `minimum_value_eth` - minimum transaction value in ETH that will be accepted by Bifrost, everything below will be ignored.
 * `stellar`
+  * `token_asset_code` - asset code for the token that will be distributed
   * `issuer_public_key` - public key of the assets issuer or hot wallet,
   * `signer_secret_key` - issuer's secret key if only one instance of Bifrost is deployed OR [channel](https://www.stellar.org/developers/guides/channels.html)'s secret key if more than one instance of Bifrost is deployed. Signer's sequence number will be consumed in transaction's sequence number.
   * `horizon` - URL to [horizon](https://github.com/stellar/go/tree/master/services/horizon) server
   * `network_passphrase` - Stellar network passphrase (`Public Global Stellar Network ; September 2015` for production network, `Test SDF Network ; September 2015` for test network)
+  * `starting_balance` - Stellar XLM amount issued to created account (41 by default)
 * `database`
   * `type` - currently the only supported database type is: `postgres`
   * `dsn` - data source name for postgres connection (`postgres://user:password@host/dbname?sslmode=sslmode` - [more info](https://godoc.org/github.com/lib/pq#hdr-Connection_String_Parameters))
@@ -100,4 +104,4 @@ Here's the proposed architecture diagram of high-availability deployment:
 * Make sure you are using geth >= 1.7.1 and bitcoin-core >= 0.15.0.
 * Increase horizon rate limiting to handle expected load.
 * Make sure you configured minimum accepted value for Bitcoin and Ethereum transactions to the value you really want.
-* Make sure you start from a fresh Bifrost DB in production. If Bifrost was running, you stopped bitcoin-core or geth and then started it again then all the Bitcoin and Ethereum blocks mined during that period will be processed which can take a lot of time.
+* Make sure you start from a fresh Bifrost DB in production. If Bifrost was running, you stopped it and then started it again then all the Bitcoin and Ethereum blocks mined during that period will be processed which can take a lot of time.

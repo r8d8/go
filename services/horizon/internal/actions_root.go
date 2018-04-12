@@ -2,8 +2,8 @@ package horizon
 
 import (
 	"github.com/stellar/go/services/horizon/internal/ledger"
-	"github.com/stellar/go/services/horizon/internal/render/hal"
 	"github.com/stellar/go/services/horizon/internal/resource"
+	"github.com/stellar/go/support/render/hal"
 )
 
 // RootAction provides a summary of the horizon instance and links to various
@@ -14,8 +14,6 @@ type RootAction struct {
 
 // JSON renders the json response for RootAction
 func (action *RootAction) JSON() {
-	action.App.UpdateStellarCoreInfo()
-
 	var res resource.Root
 	res.Populate(
 		action.Ctx,

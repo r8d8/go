@@ -84,21 +84,13 @@ func (c *Cursor) NextLedger() bool {
 		return false
 	}
 
-	if c.lg == 0 {
-		c.lg = c.FirstLedger
-	} else {
-		c.lg++
-	}
-
-	if c.lg > c.LastLedger {
-		c.data = nil
-		c.lg = 0
+	if !c.incrementLg() {
 		return false
 	}
 
 	c.data = &LedgerBundle{Sequence: c.lg}
 	start := time.Now()
-	c.Err = c.data.Load(c.DB)
+	c.Err = c.data.Load(c.CoreDB)
 	if c.Err != nil {
 		return false
 	}
@@ -109,6 +101,32 @@ func (c *Cursor) NextLedger() bool {
 
 	c.tx = -1
 	c.op = -1
+
+	return true
+}
+
+func (c *Cursor) incrementLg() bool {
+	isReverse := c.FirstLedger > c.LastLedger
+
+	if c.lg == 0 {
+		c.lg = c.FirstLedger
+	} else {
+		increment := int32(1)
+		if isReverse {
+			increment = int32(-1)
+		}
+		c.lg += increment
+	}
+
+	// If we're complete, reset the cursor and finish the iteration.  Complete in
+	// this context means the current ledger (c.lg) has progressed beyond the
+	// LastLedger: If iterating forward the current ledger is greater than
+	// LastLedger, if reverse the current ledger is less than LastLedger.
+	if (!isReverse && c.lg > c.LastLedger) || (isReverse && c.lg < c.LastLedger) {
+		c.data = nil
+		c.lg = 0
+		return false
+	}
 
 	return true
 }

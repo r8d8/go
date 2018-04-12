@@ -1,22 +1,19 @@
 package horizon
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"runtime"
 	"sync"
 	"time"
 
-	"github.com/stellar/go/clients/stellarcore"
-
-	"github.com/stellar/go/support/app"
-
 	"github.com/garyburd/redigo/redis"
 	metrics "github.com/rcrowley/go-metrics"
 	"github.com/stellar/go/build"
+	"github.com/stellar/go/clients/stellarcore"
 	"github.com/stellar/go/services/horizon/internal/db2/core"
 	"github.com/stellar/go/services/horizon/internal/db2/history"
-	"github.com/stellar/go/services/horizon/internal/friendbot"
 	"github.com/stellar/go/services/horizon/internal/ingest"
 	"github.com/stellar/go/services/horizon/internal/ledger"
 	"github.com/stellar/go/services/horizon/internal/log"
@@ -24,8 +21,8 @@ import (
 	"github.com/stellar/go/services/horizon/internal/reap"
 	"github.com/stellar/go/services/horizon/internal/render/sse"
 	"github.com/stellar/go/services/horizon/internal/txsub"
+	"github.com/stellar/go/support/app"
 	"github.com/stellar/go/support/db"
-	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	graceful "gopkg.in/tylerb/graceful.v1"
 )
@@ -45,7 +42,6 @@ type App struct {
 	protocolVersion   int32
 	submitter         *txsub.System
 	paths             paths.Finder
-	friendbot         *friendbot.Bot
 	ingester          *ingest.System
 	reaper            *reap.System
 	ticks             *time.Ticker

@@ -16,6 +16,11 @@ func (r *Trade) PagingToken() string {
 	return fmt.Sprintf("%d-%d", r.HistoryOperationID, r.Order)
 }
 
+// HasPrice returns true if the trade has non-null price data
+func (r *Trade) HasPrice() bool {
+	return r.PriceN.Valid && r.PriceD.Valid
+}
+
 // Trades provides a helper to filter rows from the `history_trades` table
 // with pre-defined filters.  See `TradesQ` methods for the available filters.
 func (q *Q) Trades() *TradesQ {
@@ -23,7 +28,7 @@ func (q *Q) Trades() *TradesQ {
 		parent: q,
 		sql:    selectTrade,
 	}
-	return trades.JoinAccounts().JoinAssets()
+	return trades.JoinAccounts().JoinAssets().InLedgerOrder()
 }
 
 // ReverseTrades provides a helper to filter rows from the `history_trades` table
@@ -33,7 +38,7 @@ func (q *Q) ReverseTrades() *TradesQ {
 		parent: q,
 		sql:    selectReverseTrade,
 	}
-	return trades.JoinAccounts().JoinAssets()
+	return trades.JoinAccounts().JoinAssets().InLedgerOrder()
 }
 
 // TradesForAssetPair provides a helper to filter rows from the `history_trades` table
@@ -61,8 +66,8 @@ func (q *TradesQ) forAssetPair(baseAssetId int64, counterAssetId int64) *TradesQ
 	return q
 }
 
-func (q *TradesQ) OrderBy(order string) *TradesQ {
-	q.sql = q.sql.OrderBy("ledger_closed_at " + order)
+func (q *TradesQ) InLedgerOrder() *TradesQ {
+	q.sql = q.sql.OrderBy("htrd.history_operation_id ", "htrd.\"order\"")
 	return q
 }
 
@@ -148,6 +153,8 @@ var selectTrade = sq.Select(
 	"counter_assets.asset_issuer as counter_asset_issuer",
 	"htrd.counter_amount",
 	"htrd.base_is_seller",
+	"htrd.price_n",
+	"htrd.price_d",
 ).From("history_trades htrd")
 
 var selectReverseTrade = sq.Select(
@@ -166,6 +173,8 @@ var selectReverseTrade = sq.Select(
 	"base_assets.asset_issuer as counter_asset_issuer",
 	"htrd.base_amount as counter_amount",
 	"NOT(htrd.base_is_seller) as base_is_seller",
+	"htrd.price_d as price_n",
+	"htrd.price_n as price_d",
 ).From("history_trades htrd")
 
 var tradesInsert = sq.Insert("history_trades").Columns(
@@ -180,6 +189,8 @@ var tradesInsert = sq.Insert("history_trades").Columns(
 	"counter_asset_id",
 	"counter_amount",
 	"base_is_seller",
+	"price_n",
+	"price_d",
 )
 
 // Trade records a trade into the history_trades table
@@ -188,6 +199,7 @@ func (q *Q) InsertTrade(
 	order int32,
 	buyer xdr.AccountId,
 	trade xdr.ClaimOfferAtom,
+	price xdr.Price,
 	ledgerClosedAt time.Millis,
 ) error {
 	sellerAccountId, err := q.GetCreateAccountID(trade.SellerId)
@@ -214,12 +226,18 @@ func (q *Q) InsertTrade(
 
 	var baseAccountId, counterAccountId int64
 	var baseAmount, counterAmount xdr.Int64
+
 	if orderPreserved {
-		baseAccountId, baseAmount, counterAccountId, counterAmount =
-			sellerAccountId, trade.AmountSold, buyerAccountId, trade.AmountBought
+		baseAccountId = sellerAccountId
+		baseAmount = trade.AmountSold
+		counterAccountId = buyerAccountId
+		counterAmount = trade.AmountBought
 	} else {
-		baseAccountId, baseAmount, counterAccountId, counterAmount =
-			buyerAccountId, trade.AmountBought, sellerAccountId, trade.AmountSold
+		baseAccountId = buyerAccountId
+		baseAmount = trade.AmountBought
+		counterAccountId = sellerAccountId
+		counterAmount = trade.AmountSold
+		price = xdr.Price{price.D, price.N}
 	}
 
 	sql := tradesInsert.Values(
@@ -234,6 +252,8 @@ func (q *Q) InsertTrade(
 		counterAssetId,
 		counterAmount,
 		orderPreserved,
+		price.N,
+		price.D,
 	)
 	_, err = q.Exec(sql)
 	if err != nil {

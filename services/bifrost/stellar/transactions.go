@@ -14,7 +14,7 @@ func (ac *AccountConfigurator) createAccount(destination string) error {
 		build.CreateAccount(
 			build.SourceAccount{ac.IssuerPublicKey},
 			build.Destination{destination},
-			build.NativeAmount{NewAccountXLMBalance},
+			build.NativeAmount{ac.StartingBalance},
 		),
 	)
 	if err != nil {
@@ -98,8 +98,14 @@ func (ac *AccountConfigurator) buildTransaction(mutators ...build.TransactionMut
 		build.Network{ac.NetworkPassphrase},
 	}
 	muts = append(muts, mutators...)
-	tx := build.Transaction(muts...)
-	txe := tx.Sign(ac.SignerSecretKey)
+	tx, err := build.Transaction(muts...)
+	if err != nil {
+		return "", err
+	}
+	txe, err := tx.Sign(ac.SignerSecretKey)
+	if err != nil {
+		return "", err
+	}
 	return txe.Base64()
 }
 

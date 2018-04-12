@@ -1,35 +1,38 @@
 package effects
 
 import (
+	"time"
+	"context"
+
 	"github.com/stellar/go/services/horizon/internal/db2/history"
 	"github.com/stellar/go/services/horizon/internal/render/hal"
 	"github.com/stellar/go/services/horizon/internal/resource/base"
-	"golang.org/x/net/context"
 )
 
 var TypeNames = map[history.EffectType]string{
-	history.EffectAccountCreated:           "account_created",
-	history.EffectAccountRemoved:           "account_removed",
-	history.EffectAccountCredited:          "account_credited",
-	history.EffectAccountDebited:           "account_debited",
-	history.EffectAccountThresholdsUpdated: "account_thresholds_updated",
-	history.EffectAccountHomeDomainUpdated: "account_home_domain_updated",
-	history.EffectAccountFlagsUpdated:      "account_flags_updated",
-	history.EffectSignerCreated:            "signer_created",
-	history.EffectSignerRemoved:            "signer_removed",
-	history.EffectSignerUpdated:            "signer_updated",
-	history.EffectTrustlineCreated:         "trustline_created",
-	history.EffectTrustlineRemoved:         "trustline_removed",
-	history.EffectTrustlineUpdated:         "trustline_updated",
-	history.EffectTrustlineAuthorized:      "trustline_authorized",
-	history.EffectTrustlineDeauthorized:    "trustline_deauthorized",
-	history.EffectOfferCreated:             "offer_created",
-	history.EffectOfferRemoved:             "offer_removed",
-	history.EffectOfferUpdated:             "offer_updated",
-	history.EffectTrade:                    "trade",
-	history.EffectDataCreated:              "data_created",
-	history.EffectDataRemoved:              "data_removed",
-	history.EffectDataUpdated:              "data_updated",
+	history.EffectAccountCreated:                     "account_created",
+	history.EffectAccountRemoved:                     "account_removed",
+	history.EffectAccountCredited:                    "account_credited",
+	history.EffectAccountDebited:                     "account_debited",
+	history.EffectAccountThresholdsUpdated:           "account_thresholds_updated",
+	history.EffectAccountHomeDomainUpdated:           "account_home_domain_updated",
+	history.EffectAccountFlagsUpdated:                "account_flags_updated",
+	history.EffectAccountInflationDestinationUpdated: "account_inflation_destination_updated",
+	history.EffectSignerCreated:                      "signer_created",
+	history.EffectSignerRemoved:                      "signer_removed",
+	history.EffectSignerUpdated:                      "signer_updated",
+	history.EffectTrustlineCreated:                   "trustline_created",
+	history.EffectTrustlineRemoved:                   "trustline_removed",
+	history.EffectTrustlineUpdated:                   "trustline_updated",
+	history.EffectTrustlineAuthorized:                "trustline_authorized",
+	history.EffectTrustlineDeauthorized:              "trustline_deauthorized",
+	history.EffectOfferCreated:                       "offer_created",
+	history.EffectOfferRemoved:                       "offer_removed",
+	history.EffectOfferUpdated:                       "offer_updated",
+	history.EffectTrade:                              "trade",
+	history.EffectDataCreated:                        "data_created",
+	history.EffectDataRemoved:                        "data_removed",
+	history.EffectDataUpdated:                        "data_updated",
 }
 
 // New creates a new effect resource from the provided database representation
@@ -37,10 +40,11 @@ var TypeNames = map[history.EffectType]string{
 func New(
 	ctx context.Context,
 	row history.Effect,
+	ledger history.Ledger,
 ) (result hal.Pageable, err error) {
 
 	basev := Base{}
-	basev.Populate(ctx, row)
+	basev.Populate(ctx, row, ledger)
 
 	switch row.Type {
 	case history.EffectAccountCreated:
@@ -128,11 +132,12 @@ type Base struct {
 		Precedes  hal.Link `json:"precedes"`
 	} `json:"_links"`
 
-	ID      string `json:"id"`
-	PT      string `json:"paging_token"`
-	Account string `json:"account"`
-	Type    string `json:"type"`
-	TypeI   int32  `json:"type_i"`
+	ID              string    `json:"id"`
+	PT              string    `json:"paging_token"`
+	Account         string    `json:"account"`
+	Type            string    `json:"type"`
+	TypeI           int32     `json:"type_i"`
+	LedgerCloseTime time.Time `json:"created_at"`
 }
 
 type AccountCreated struct {

@@ -39,6 +39,10 @@ const (
 	// account flags, either clearing or setting.
 	EffectAccountFlagsUpdated EffectType = 6 // from set_options
 
+	// EffectAccountInflationDestinationUpdated effects occur when an account changes its
+	// inflation destination.
+	EffectAccountInflationDestinationUpdated EffectType = 7 // from set_options
+
 	// signer effects
 
 	// EffectSignerCreated occurs when an account gains a signer
@@ -170,6 +174,7 @@ type Ledger struct {
 	BaseReserve        int32       `db:"base_reserve"`
 	MaxTxSetSize       int32       `db:"max_tx_set_size"`
 	ProtocolVersion    int32       `db:"protocol_version"`
+	LedgerHeaderXDR    null.String `db:"ledger_header"`
 }
 
 // LedgerCache is a helper struct to load ledger data related to a batch of
@@ -238,6 +243,8 @@ type Trade struct {
 	CounterAssetIssuer string    `db:"counter_asset_issuer"`
 	CounterAmount      xdr.Int64 `db:"counter_amount"`
 	BaseIsSeller       bool      `db:"base_is_seller"`
+	PriceN             null.Int  `db:"price_n"`
+	PriceD             null.Int  `db:"price_d"`
 }
 
 // TradesQ is a helper struct to aid in configuring queries that loads
